@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- Build-File für die Cuina-Engine -->
+
+<project name="Expression" basedir="." default="main">
+	
+	<!-- Properties definieren -->
+	<property name="target" value="1.6"/>
+	<property name="source" value="1.6"/>
+	
+	<property name="src.dir" value="src"/>
+	<property name="build.dir" value="build"/>
+	<property name="deploy.dir" value="deploy"/>
+	
+	<target name="setup_files">
+		<delete dir="${build.dir}" />
+		<delete dir="${deploy.dir}" />
+		
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${deploy.dir}"/>
+		
+		<copy todir="${build.dir}">
+			<fileset file="LICENSE" />
+			<fileset file="README.md" />
+		</copy>
+	</target>
+	
+	<target name="build" depends="setup_files">
+		<javac srcdir="${src.dir}" destdir="${build.dir}" excludes="tws/test/exp/**" includeantruntime="true" />
+
+		<jar destfile="${deploy.dir}\expression.jar" basedir="${build.dir}">
+			<manifest>
+				<attribute name="Created-By" value="TheWhiteShadow" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="main" depends="build">
+		<description>Expression Deployment</description>
+	</target>
+</project>
