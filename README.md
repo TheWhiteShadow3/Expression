@@ -1,4 +1,4 @@
-Java Expression-API by TheWhiteShadow
+Java Expression-Library by TheWhiteShadow
 ========================================
 Copyright (C) 2014 by TheWhiteShadow
 
