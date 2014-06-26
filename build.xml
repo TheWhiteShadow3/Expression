@@ -4,10 +4,6 @@
 
 <project name="Expression" basedir="." default="main">
 	
-	<!-- Properties definieren -->
-	<property name="target" value="1.6"/>
-	<property name="source" value="1.6"/>
-	
 	<property name="src.dir" value="src"/>
 	<property name="build.dir" value="build"/>
 	<property name="deploy.dir" value="deploy"/>
