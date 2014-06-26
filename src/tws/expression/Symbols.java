@@ -30,7 +30,7 @@ class Symbols
 			case OR: 			return or(op, left.getArgument(), right.getArgument());
 			case EXOR: 			return exor(op, left.getArgument(), right.getArgument());
 			
-			case ASSIGN:		return assign(left, right);
+			case ASSIGN:		return assign(left, right.getArgument());
 			case INDEX:			return index(left, right);
 			
 			default:
@@ -307,14 +307,14 @@ class Symbols
 		return new BooleanArgument(node, !arg.asBoolean());
 	}
 
-	private static Node assign(Node left, Node right)
+	private static Node assign(Node left, Argument arg)
 	{
 		if (left instanceof Reference)
 		{
 			String var = ((Reference) left).getName();
 
-			left.getExpression().getConfig().assign(var, right.getArgument());
-			return right;
+			left.getExpression().getConfig().assign(var, arg);
+			return (Node) arg;
 		}
 		else if (left instanceof InfixOperation)
 		{
@@ -324,15 +324,15 @@ class Symbols
 
 			if (array.getClass().isArray())
 			{
-				java.lang.reflect.Array.set(array, index, right.getArgument().asObject());
+				java.lang.reflect.Array.set(array, index, arg.asObject());
 			}
 			else if (array instanceof List)
 			{
-				((List) array).set(index, right.getArgument().asObject());
+				((List) array).set(index, arg.asObject());
 			}
 			else throw new EvaluationException(left, "Invalid reference type " + array.getClass().getName());
 			
-			return right;
+			return (Node) arg;
 		}
 		throw new EvaluationException(left, "Invalid Type for Operation: ASSIGN");
 	}
@@ -367,7 +367,7 @@ class Symbols
 		{
 			if (left instanceof Reference)
 			{
-				return new ObjectArgument(left, ((Reference) left).resolve().asList().get(index));
+				return (Node) Config.wrap(left, ((Reference) left).resolve().asList().get(index));
 			}
 			else if (left instanceof Array)
 			{

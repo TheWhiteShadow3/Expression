@@ -34,6 +34,7 @@ public class EvaluationTest
 		Expression.DEFAULT_CONFIG.debug = true;
 		Expression.DEFAULT_CONFIG.resolver = new Resolver()
 		{
+			@Override
 			public Object resolve(String refName, Argument[] args) throws EvaluationException
 			{
 				if ("blub".equals(refName)) return blub;
@@ -43,6 +44,7 @@ public class EvaluationTest
 				throw new EvaluationException("");
 			}
 
+			@Override
 			public void assign(String name, Argument arg) throws EvaluationException
 			{
 				
@@ -496,10 +498,13 @@ public class EvaluationTest
 		b = new Expression("abc", config).resolve().asBoolean();
 		assertTrue(b);
 		
+		b = new Expression("xyz := abc", config).resolve().asBoolean();
+		assertTrue(b);
+		
 		result = new Expression("abc := [[1 ,2, 3]]", config).resolve().asObject();
 		assertEquals(2L, ((List<List<?>>) result).get(0).get(1));
 		
-		b = new Expression("abc[0][1] := true", config).resolve().asBoolean();
+		b = new Expression("abc[0][1] := xyz", config).resolve().asBoolean();
 		
 		b = new Expression("abc[0][1]", config).resolve().asBoolean();
 		assertTrue(b);
