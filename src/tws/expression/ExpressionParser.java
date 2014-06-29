@@ -204,7 +204,7 @@ public class ExpressionParser
 			}
 			else if (isIdentifier(c))
 			{
-				if (args.size() > 0 && opCount == 0) throwException("Missing operator.", null);
+				if (args.size() > 0 && opCount == 0) throwException("Operation expectrd.", null);
 				
 				do { pos++; }
 				while( pos < lenght && isIdentifier(string.charAt(pos)) );
@@ -289,7 +289,7 @@ public class ExpressionParser
 		if (op.isPrefixOperation())
 		{
 			Node arg = args.get(index+1);
-			if (op.getSourcePos() < arg.getSourcePos()-1) throwException("Präfix-Operator must not seperate from operand.", null);
+			if (op.getSourcePos() < arg.getSourcePos()-1) throwException("Prefix-Operator must not seperate from operand.", null);
 			
 			if (arg instanceof Operation)
 				args.set(index, new PrefixOperation(op, arg));
@@ -313,7 +313,7 @@ public class ExpressionParser
 		}
 		else
 		{
-			throw new UnsupportedOperationException("Operation nicht implementiert.");
+			throw new UnsupportedOperationException("Operation not implemented.");
 		}
 	}
 	
@@ -328,6 +328,9 @@ public class ExpressionParser
 			case '/': return Operator.DIV;
 			case '%': return Operator.MOD;
 			case ',': return Operator.COMMA;
+			case '.':
+				if (!exp.getConfig().useInvocations) throwException("Invalid Expression", null);
+				return Operator.DOT;
 			case '!':
 			{
 				c = string.charAt(pos+1);
@@ -410,6 +413,7 @@ public class ExpressionParser
 					pos++;
 					return Operator.ASSIGN;
 				}
+				break;
 			}
 		}
 		throwException("Invalid Expression", null);
@@ -446,10 +450,11 @@ public class ExpressionParser
 	
 	private boolean isIdentifier(char c)
 	{
+		if (c == '.' && !exp.getConfig().useInvocations) return true;
 		return (c > 47 && c < 58)		// Zahl
 				|| (c > 64 && c < 91)	// Groß A-Z
 				|| (c > 96 && c < 123)	// Klein a-z
-				|| (c == '_') || (c == '.') || (c == '$'); // Sonderzeichen
+				|| (c == '_') || (c == '$'); // Sonderzeichen
 	}
 	
 	private boolean isWhiteSpace(char c)
@@ -457,7 +462,7 @@ public class ExpressionParser
 		return (c == ' ' || c == '\n' || c == '\t');
 	}
 	
-	private void throwException(String message, Exception e)
+	private void throwException(String message, Exception e) throws EvaluationException
 	{
 		throw new EvaluationException(string, pos, message, e);
 	}

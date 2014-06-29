@@ -510,6 +510,87 @@ public class EvaluationTest
 		assertTrue(b);
 	}
 	
+	@Test
+	public void testInvocation()
+	{
+		System.out.println("Invocation");
+		Config config = new Config();
+		config.debug = true;
+		config.useVariables = true;
+		Object result;
+		
+		try
+		{
+			result = new Expression("abc.length()", config).resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		config.useInvocations = true;
+		
+		long l = new Expression("'abc'.length()", config).resolve().asLong();
+		assertEquals(3, l);
+		
+		String str = new Expression("'abc'.charAt(0)", config).resolve().asString();
+		assertEquals("a", str);
+		
+		// 'c' entspricht der Zahl 99 im ascii-code.
+		l = new Expression("'abc'.indexOf(99)", config).resolve().asLong();
+		assertEquals(2, l);
+		
+		l = new Expression("[1, 2, 3].size()", config).resolve().asLong();
+		assertEquals(3, l);
+		
+		l = new Expression("'abc'.substring(1).substring(1).length()", config).resolve().asLong();
+		assertEquals(1, l);
+		
+		try
+		{
+			result = new Expression("'abc'.5", config).compile();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		try
+		{
+			result = new Expression("'abc'.indefOf()", config).resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		config.assign("pantsu", new Pantsu("shiro", "aoi"));
+		
+		result = new Expression("pantsu.colors()[1]", config).resolve().asString();
+		assertEquals("aoi", result);
+		
+		try
+		{
+			result = new Expression("pantsu.colors", config).resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		result = new Expression("pantsu.SHIRO_PANTSU.colors()", config).resolve().asList().get(0);
+		assertEquals("shiro", result);
+	}
+	
+	// Klasse für die Invoke-Testreihe
+	public static class Pantsu
+	{
+		public static final Pantsu SHIRO_PANTSU = new Pantsu("shiro");
+		private String[] colors;
+		
+		public Pantsu(String... colors)
+		{
+			this.colors = colors;
+		}
+
+		public String[] colors()
+		{
+			return colors;
+		}
+	}
+	
 	private void handleException(EvaluationException e)
 	{
 		System.out.println();

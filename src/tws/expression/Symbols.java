@@ -30,6 +30,7 @@ class Symbols
 			case OR: 			return or(op, left.getArgument(), right.getArgument());
 			case EXOR: 			return exor(op, left.getArgument(), right.getArgument());
 			
+			case DOT:			return dot(left, right);
 			case ASSIGN:		return assign(left, right.getArgument());
 			case INDEX:			return index(left, right);
 			
@@ -383,5 +384,13 @@ class Symbols
 		{
 			throw new EvaluationException(right, "Invalid Index.", e);
 		}
+	}
+	
+	private static Node dot(Node left, Node right)
+	{
+		if (!left.getExpression().getConfig().useInvocations)
+			throw new EvaluationException("Invalid Operation '.'");
+		
+		return InvocationHelper.resolve(left, right);
 	}
 }

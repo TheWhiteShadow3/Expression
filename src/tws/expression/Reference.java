@@ -25,33 +25,40 @@ public class Reference extends Node implements Operation
 		this.argNodes = argNodes;
 	}
 	
+	@Override
+	public Node[] getChildren()
+	{
+		return argNodes;
+	}
+	
 	public String getName()
 	{
 		return name;
 	}
 	
+	Argument[] resolveArguments()
+	{
+		if (argNodes == null) return null;
+		
+		Argument[] args = new Argument[argNodes.length];
+		for(int i = 0; i < args.length; i++)
+			args[i] = argNodes[i].getArgument();
+		return args;
+	}
+	
+	@Override
 	public Argument resolve() throws EvaluationException
 	{
-		Object obj;
 		Resolver resolver = getExpression().getConfig().internalResolver;
 		try
 		{
-			if (argNodes == null)
-				obj = resolver.resolve(name, null);
-			else
-			{
-				Argument[] args = new Argument[argNodes.length];
-				for(int i = 0; i < args.length; i++)
-					args[i] = argNodes[i].getArgument();
-				obj = resolver.resolve(name, args);
-			}
+			Object obj = resolver.resolve(name, resolveArguments());
+			return Config.wrap(this, obj);
 		}
 		catch(Exception e)
 		{
 			throw new EvaluationException(this, "Can not resolve " + name, e);
 		}
-		
-		return Config.wrap(this, obj);
 	}
 	
 	@Override

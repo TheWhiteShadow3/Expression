@@ -108,6 +108,8 @@ public final class Config
 	 */
 	public boolean useVariables = false;
 	
+	public boolean useInvocations = false;
+	
 	/**
 	 * Der Resolver, der für das Auflösen von Variablen und Funktionen benutzt werden soll,
 	 * so wie option auch für das Setzten von Variablen.
@@ -200,6 +202,20 @@ public final class Config
 	public void assign(String name, Argument value) throws EvaluationException
 	{
 		internalResolver.assign(name, value);
+	}
+	
+	/**
+	 * Setzt eine Variable.
+	 * Die Variable kann nur gesetzt werden, wenn {@link #useVariables} <code>true</code> ist
+	 * oder ein externer Resolver es unterstützt.
+	 * @param name Name der Variablen.
+	 * @param value Wert, den die Variable erhalten soll.
+	 * @throws EvaluationException Wenn das Argument nicht zugewiesen werden konnte.
+	 * @see #resolver
+	 */
+	public void assign(String name, Object value) throws EvaluationException
+	{
+		assign(name, wrap(null, value));
 	}
 	
 	/**

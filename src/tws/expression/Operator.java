@@ -3,6 +3,7 @@ package tws.expression;
 public enum Operator
 {
 	INDEX(11),
+	DOT(11),
 	
 	NOT(10),
 	NEG(10),

@@ -12,6 +12,11 @@ public class EvaluationException extends RuntimeException
 		super(message);
 	}
 	
+	public EvaluationException(String message, Exception e)
+	{
+		super(message, e);
+	}
+	
 	public EvaluationException(Node node, String message, Throwable cause)
 	{
 		super(createMessage(node.getExpression().getSourceString(), node.getSourcePos(), message), cause);
@@ -31,7 +36,7 @@ public class EvaluationException extends RuntimeException
 	{
 		super(createMessage(sourceString, pos, message));
 	}
-	
+
 	private static String createMessage(String sourceString, int pos, String message)
 	{
 		StringBuilder builder = new StringBuilder(256);
