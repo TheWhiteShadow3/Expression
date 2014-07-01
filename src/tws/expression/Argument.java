@@ -57,28 +57,28 @@ public interface Argument
 	 * @return Das Argument als <code>String</code>.
 	 * @throws EvaluationException wenn das Argument nicht in einen <code>String</code> konvertiert werden kann.
 	 */
-	public String asString();
+	public String asString() throws EvaluationException;
 	
 	/**
 	 * Gibt den Wert als <code>boolean</code> zurück.
 	 * @return Das Argument als <code>boolean</code>.
 	 * @throws EvaluationException wenn das Argument nicht in ein <code>boolean</code> konvertiert werden kann.
 	 */
-	public boolean asBoolean();
+	public boolean asBoolean() throws EvaluationException;
 	
 	/**
 	 * Gibt den Wert als <code>double</code> zurück.
 	 * @return Das Argument als <code>double</code>.
 	 * @throws EvaluationException wenn das Argument nicht in ein <code>double</code> konvertiert werden kann.
 	 */
-	public double asDouble();
+	public double asDouble() throws EvaluationException;
 	
 	/**
 	 * Gibt den Wert als <code>long</code> zurück.
 	 * @return Das Argument als <code>long</code>.
 	 * @throws EvaluationException wenn das Argument nicht in ein <code>long</code> konvertiert werden kann.
 	 */
-	public long asLong();
+	public long asLong() throws EvaluationException;
 	
 	/**
 	 * Gibt den Wert als <code>Object</code> zurück.

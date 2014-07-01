@@ -13,6 +13,11 @@ public class PrefixOperation extends Node implements Operation
 		this.arg = arg;
 	}
 
+	public OperationNode getSymbol()
+	{
+		return symbol;
+	}
+	
 	public Argument resolve() throws EvaluationException
 	{
 		return (Argument) Symbols.resolveOneArg(symbol, arg);

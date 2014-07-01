@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import tws.expression.Argument;
 import tws.expression.Config;
+import tws.expression.DefaultInvoker;
 import tws.expression.EvaluationException;
 import tws.expression.Expression;
 import tws.expression.Operation;
@@ -95,6 +96,13 @@ public class EvaluationTest
 		try
 		{
 			Operation op = new Expression("- 2").compile();
+			fail("Fail: " + op.toString());
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		try
+		{
+			Operation op = new Expression("1 .2.3").compile();
 			fail("Fail: " + op.toString());
 		}
 		catch(EvaluationException e) { handleException(e); }
@@ -487,6 +495,13 @@ public class EvaluationTest
 		
 		try
 		{
+			result = new Expression("1 := 5", config).resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		try
+		{
 			result = new Expression("abc", config).resolve();
 			fail("Fail: " + result);
 		}
@@ -521,12 +536,12 @@ public class EvaluationTest
 		
 		try
 		{
-			result = new Expression("abc.length()", config).resolve();
+			result = new Expression("'abc'.length()", config).resolve();
 			fail("Fail: " + result);
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
-		config.useInvocations = true;
+		config.invocator = new DefaultInvoker();
 		
 		long l = new Expression("'abc'.length()", config).resolve().asLong();
 		assertEquals(3, l);
@@ -572,12 +587,20 @@ public class EvaluationTest
 		
 		result = new Expression("pantsu.SHIRO_PANTSU.colors()", config).resolve().asList().get(0);
 		assertEquals("shiro", result);
+		
+		// Zur Implementierung fürs Setzen von Feldern Siehe tws.expression.Symbol.java
+		try
+		{
+			result = new Expression("pantsu.SHIRO_PANTSU := null", config).resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
 	}
 	
 	// Klasse für die Invoke-Testreihe
 	public static class Pantsu
 	{
-		public static final Pantsu SHIRO_PANTSU = new Pantsu("shiro");
+		public static Pantsu SHIRO_PANTSU = new Pantsu("shiro");
 		private String[] colors;
 		
 		public Pantsu(String... colors)

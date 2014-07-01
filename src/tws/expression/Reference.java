@@ -36,7 +36,7 @@ public class Reference extends Node implements Operation
 		return name;
 	}
 	
-	Argument[] resolveArguments()
+	public Argument[] resolveArguments()
 	{
 		if (argNodes == null) return null;
 		

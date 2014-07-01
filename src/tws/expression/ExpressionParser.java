@@ -204,15 +204,19 @@ public class ExpressionParser
 			}
 			else if (isIdentifier(c))
 			{
-				if (args.size() > 0 && opCount == 0) throwException("Operation expectrd.", null);
+				if (args.size() > 0 && opCount == 0) throwException("Operation expected.", null);
 				
 				do { pos++; }
 				while( pos < lenght && isIdentifier(string.charAt(pos)) );
 				
-				
-				String str = string.substring(start, pos);
-				if (c > 47 && c < 58)
+				if (c > 47 && c < 58) // Literal beginnt mit einer Zahl.
 				{
+					if (pos < lenght && string.charAt(pos) == '.')
+					{
+						do { pos++; }
+						while( pos < lenght && isIdentifier(string.charAt(pos)) );
+					}
+					String str = string.substring(start, pos);
 					if (str.indexOf('.') != -1)
 						args.add( new FloatArgument(exp, start, Double.parseDouble(str)) );
 					else
@@ -220,7 +224,7 @@ public class ExpressionParser
 				}
 				else
 				{
-					resolveKeywords(str);
+					resolveKeywords(string.substring(start, pos));
 				}
 				opCount = 0;
 				start = pos;
@@ -289,7 +293,8 @@ public class ExpressionParser
 		if (op.isPrefixOperation())
 		{
 			Node arg = args.get(index+1);
-			if (op.getSourcePos() < arg.getSourcePos()-1) throwException("Prefix-Operator must not seperate from operand.", null);
+			if (op.getSourcePos() < arg.getSourcePos()-1)
+				throw new EvaluationException(arg, "Prefix-Operator must not seperate from operand.");
 			
 			if (arg instanceof Operation)
 				args.set(index, new PrefixOperation(op, arg));
@@ -302,6 +307,11 @@ public class ExpressionParser
 		{
 			Node left = args.get(index-1);
 			Node right = args.get(index+1);
+			if (op.getOperator() == Operator.DOT)
+			{
+				if (isWhiteSpace(string.charAt(op.getSourcePos()-1)))
+					throw new EvaluationException(op, "DOT-Operator must not seperate from operand.");
+			}
 			
 			if (left instanceof Operation || right instanceof Operation)
 				args.set(index-1, new InfixOperation(left, op, right));
@@ -328,9 +338,7 @@ public class ExpressionParser
 			case '/': return Operator.DIV;
 			case '%': return Operator.MOD;
 			case ',': return Operator.COMMA;
-			case '.':
-				if (!exp.getConfig().useInvocations) throwException("Invalid Expression", null);
-				return Operator.DOT;
+			case '.': return Operator.DOT;
 			case '!':
 			{
 				c = string.charAt(pos+1);
@@ -450,7 +458,6 @@ public class ExpressionParser
 	
 	private boolean isIdentifier(char c)
 	{
-		if (c == '.' && !exp.getConfig().useInvocations) return true;
 		return (c > 47 && c < 58)		// Zahl
 				|| (c > 64 && c < 91)	// Groß A-Z
 				|| (c > 96 && c < 123)	// Klein a-z

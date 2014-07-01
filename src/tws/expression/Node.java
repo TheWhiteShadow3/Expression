@@ -13,14 +13,11 @@ public abstract class Node
 	
 	Node(Node parent)
 	{
-//		if (parent == null) throw new NullPointerException("parent is null");
+		if (parent == null) throw new NullPointerException("parent is null");
 		
 		this.parent = parent;
-		if (parent != null)
-		{
-			this.exp = parent.getExpression();
-			this.sourcePos = parent.getSourcePos();
-		}
+		this.exp = parent.getExpression();
+		this.sourcePos = parent.getSourcePos();
 	}
 	
 	Node(Expression exp, int sourcePos)

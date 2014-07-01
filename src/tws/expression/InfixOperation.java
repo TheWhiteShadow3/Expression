@@ -14,7 +14,13 @@ public class InfixOperation extends Node implements Operation
 		this.left = left;
 		this.right = right;
 	}
-	
+
+	public OperationNode getSymbol()
+	{
+		return symbol;
+	}
+
+	@Override
 	public Argument resolve() throws EvaluationException
 	{
 		return (Argument) Symbols.resolveTwoArgs(symbol, left, right);

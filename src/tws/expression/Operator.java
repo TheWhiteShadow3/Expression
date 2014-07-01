@@ -1,5 +1,9 @@
 package tws.expression;
 
+/**
+ * Ein Operator bestimmt den Typ der Operation auf ein oder mehrere Daten.
+ * @author TheWhiteShadow
+ */
 public enum Operator
 {
 	INDEX(11),

@@ -4,6 +4,8 @@ package tws.expression;
  * Ein Resolver kann Variablen und Funktionen auflösen.
  * Optional kann er auch Variablen speichern.
  * @author TheWhiteShadow
+ * @see Config
+ * @see Invoker
  */
 public interface Resolver
 {
@@ -28,18 +30,4 @@ public interface Resolver
 	 * @throws EvaluationException Wenn der Wert nicht zugewiesen werden konnte.
 	 */
 	public void assign(String name, Argument arg) throws EvaluationException;
-	
-//	/**
-//	 * Ruft eine Funktion vom Empfänger auf.
-//	 * <p>
-//	 * <i>Die Methode ist optional.</i><br>
-//	 * Damit die Methode überhaupt aufgerufen wird, muss {@link Config#useInvocations} auf <code>false</code> sein.
-//	 * </p>
-//	 * @param reciever Empfänger des Aufrufs.
-//	 * @param name Name der Eigenschaft oder Funktion.
-//	 * @param args Ein Array mit den Argumenten der Funktion.
-//	 * @return Das Ergebnis der Funktion
-//	 * @throws EvaluationException Wenn der Funktionsaufruf fehlt schlägt.
-//	 */
-//	public Object invoke(Argument reciever, String name, Argument[] args) throws EvaluationException;
 }

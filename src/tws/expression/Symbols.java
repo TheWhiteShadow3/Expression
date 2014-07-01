@@ -319,47 +319,39 @@ class Symbols
 		}
 		else if (left instanceof InfixOperation)
 		{
+			InfixOperation op = (InfixOperation) left;
 			Node[] nodes = left.getChildren();
-			Object array = nodes[0].getArgument().asObject();
-			int index = (int) nodes[1].getArgument().asLong();
-
-			if (array.getClass().isArray())
-			{
-				java.lang.reflect.Array.set(array, index, arg.asObject());
-			}
-			else if (array instanceof List)
-			{
-				((List) array).set(index, arg.asObject());
-			}
-			else throw new EvaluationException(left, "Invalid reference type " + array.getClass().getName());
+			Object reciever = nodes[0].getArgument().asObject();
 			
-			return (Node) arg;
+			if (op.getSymbol().getOperator() == Operator.INDEX)
+			{
+				int index = (int) nodes[1].getArgument().asLong();
+				assignToArray(left, reciever, index, arg);
+				return (Node) arg;
+			}
+			// TODO: Das Setzen von Feldern ist noch nicht implementiert. Würde aber an dieser Stelle stehen.
+//			else if (op.getSymbol().getOperator() == Operator.DOT)
+//			{
+//				Reference ref = (Reference) nodes[1];
+//				assignToField(left, reciever, ref.getName(), ref.getArgument());
+//				return (Node) arg;
+//			}
 		}
 		throw new EvaluationException(left, "Invalid Type for Operation: ASSIGN");
 	}
 	
-//	private static Object resolveOperationAsReference(InfixOperation op)
-//	{
-//		if (((OperationNode) op.getParent()).getOperator() != Operator.INDEX)
-//			throw new EvaluationException(op, "Invalid operator in Assignment.");
-//		
-//		Node[] nodes = op.getChildren();
-//		if (nodes[0] instanceof InfixOperation)
-//			re
-//		Node node = op;
-//		while(node instanceof InfixOperation)
-//		{
-//			
-//				
-//			Node[] nodes = node.getChildren();
-//			node = nodes[0];
-//			
-////			Object array = nodes[0].getArgument().asObject();
-//			int index = (int) nodes[1].getArgument().asLong();
-//		}
-//		
-//		return null;
-//	}
+	private static void assignToArray(Node node, Object array, int index, Argument arg)
+	{
+		if (array.getClass().isArray())
+		{
+			java.lang.reflect.Array.set(array, index, arg.asObject());
+		}
+		else if (array instanceof List)
+		{
+			((List) array).set(index, arg.asObject());
+		}
+		else throw new EvaluationException(node, "Invalid reference type " + array.getClass().getName());
+	}
 
 	private static Node index(Node left, Node right)
 	{
@@ -386,11 +378,44 @@ class Symbols
 		}
 	}
 	
-	private static Node dot(Node left, Node right)
+	private static Node dot(Node recieverNode, Node call)
 	{
-		if (!left.getExpression().getConfig().useInvocations)
-			throw new EvaluationException("Invalid Operation '.'");
+		Argument reciever = recieverNode.getArgument();
+		if (!(call instanceof Reference))
+			throw new EvaluationException(call, "Can not invoke " + call);
 		
-		return InvocationHelper.resolve(left, right);
+		Reference ref = (Reference) call;
+		String name = ref.getName();
+		Argument[] args = ref.resolveArguments();
+		try
+		{
+			Config config = recieverNode.getExpression().getConfig();
+			Object result = config.internalResolver.invoke(reciever, name, args);
+			return (Node) Config.wrap(recieverNode, result);
+		}
+		catch (NoSuchFieldException e)
+		{
+			throw new EvaluationException(call,
+					"Field '" + name + "' not found for " + reciever.getType().getName(), e);
+		}
+		catch (NoSuchMethodException e)
+		{
+			StringBuilder builder = new StringBuilder();
+			builder.append("Method ").append(name);
+			builder.append('(');
+			for (int i = 0; i < args.length; i++)
+			{
+				if (i > 0) builder.append(", ");
+				builder.append(args[i].getType());
+			}
+			builder.append(')');
+			builder.append(" not found for ").append(reciever.getType().getName());
+			
+			throw new EvaluationException(call, builder.toString(), e);
+		}
+		catch (Exception e)
+		{
+			throw new EvaluationException(call, "Can not invoke " + name, e);
+		}
 	}
 }

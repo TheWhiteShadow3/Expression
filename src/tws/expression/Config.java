@@ -103,19 +103,23 @@ public final class Config
 
 	/**
 	 * Gibt an, ob intern ein Variablen-pool angelegt werden soll.
-	 * Wenn ja, werden keine Zuweisungen mehr am Resolver gesendet.
+	 * Wenn ja, werden keine Zuweisungen mehr an den Resolver gesendet.
 	 * Default ist <code>false</code>.
 	 */
 	public boolean useVariables = false;
 	
-	public boolean useInvocations = false;
-	
 	/**
 	 * Der Resolver, der für das Auflösen von Variablen und Funktionen benutzt werden soll,
-	 * so wie option auch für das Setzten von Variablen.
+	 * so wie optional auch für das Setzten von Variablen.
 	 * Default ist <code>null</code>.
 	 */
 	public Resolver resolver;
+	
+	/**
+	 * Der Invoker für dynamische Funktionen und Felder.
+	 * Default ist <code>null</code>.
+	 */
+	public Invoker invocator;
 	
 	/**
 	 * Der Collator, der für String-Vergleiche benutzt werden soll.
@@ -126,7 +130,6 @@ public final class Config
 	/** Interner Resolver für vordefinierte Variablen und Funktionen. */
 	final InternalResolver internalResolver;
 
-	
 	/**
 	 * Erstellt eine neue Konfiguration für eine Expression mit Standardwerten.
 	 */
@@ -146,7 +149,9 @@ public final class Config
 		this.nullBehavor = config.nullBehavor;
 		this.usePredefinedContants = config.usePredefinedContants;
 		this.usePredefinedFunctions = config.usePredefinedFunctions;
+		this.useVariables = config.useVariables;
 		this.resolver = config.resolver;
+		this.invocator = config.invocator;
 		this.stringCollator = config.stringCollator;
 	}
 	
@@ -215,7 +220,17 @@ public final class Config
 	 */
 	public void assign(String name, Object value) throws EvaluationException
 	{
-		assign(name, wrap(null, value));
+		internalResolver.assign(name, value);
+	}
+	
+	Object resolve(String name, Argument[] args) throws Exception
+	{
+		return internalResolver.resolve(name, args);
+	}
+	
+	Object invoke(Argument reciever, String name, Argument[] args) throws Exception
+	{
+		return internalResolver.invoke(reciever, name, args);
 	}
 	
 	/**
@@ -247,17 +262,7 @@ public final class Config
 			throw new EvaluationException("Can not cast null to String."); 
 	}
 
-	/**
-	 * Kapselt ein Objekt in ein {@link Argument}.
-	 * <p>
-	 * Für jedes Objekt gilt:
-	 * <pre>wrap(obj).asObject().equals(obj);</pre>
-	 * </p>
-	 * @param parent Eltern-Knoten, im Baum. Kann <code>null</code> sein.
-	 * @param obj Das Objekt, welches gekapselt werden soll.
-	 * @return Ein Argument, mit dem gekapselten Objekt.
-	 */
-	public static Argument wrap(Node parent, Object obj)
+	static Argument wrap(Node parent, Object obj)
 	{
 		if (obj == null) return new NullArgument(parent);
 		if (obj instanceof Argument) return (Argument) obj;

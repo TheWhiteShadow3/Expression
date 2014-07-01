@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-class InternalResolver implements Resolver
+class InternalResolver implements Resolver, Invoker
 {
 	private static final Double PI = Math.PI;
 	private static final Double E = Math.E;
@@ -18,6 +18,7 @@ class InternalResolver implements Resolver
 		this.config = config;
 	}
 
+	@Override
 	public Object resolve(String name, Argument[] args) throws EvaluationException
 	{
 		if (args != null && config.usePredefinedFunctions)
@@ -87,24 +88,39 @@ class InternalResolver implements Resolver
 		return max;
 	}
 
-	public void assign(String name, Argument arg) throws EvaluationException
+	@Override
+	public void assign(String name, Argument value) throws EvaluationException
 	{
 		if (config.useVariables)
 		{
-			if (variables == null) variables = new HashMap<String, Object>();
-			variables.put(name, arg.asObject());
+			assign(name, value.asObject());
 		}
 		else
 		{
 			Resolver r = config.resolver;
 			if (r == null) throw new EvaluationException("No resolver defined.");
 			
-			r.assign(name, arg);
+			r.assign(name, value);
 		}
 	}
 
+	public void assign(String name, Object value) throws EvaluationException
+	{
+		if (variables == null) variables = new HashMap<String, Object>();
+		variables.put(name, value);
+	}
+	
 	public Map<String, Object> getVariables()
 	{
 		return Collections.unmodifiableMap(variables);
+	}
+
+	@Override
+	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
+	{
+		Invoker r = config.invocator;
+		if (r == null) throw new EvaluationException("No invoker defined.");
+		
+		return r.invoke(reciever, name, args);
 	}
 }

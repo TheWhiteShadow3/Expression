@@ -5,75 +5,44 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class InvocationHelper
+/**
+ * Der Default-Invoker für das Auflösen von Feldern und Methoden in Ausdrücken.
+ * @author TheWhiteShadow
+ * @see Config#invocator
+ */
+public class DefaultInvoker implements Invoker
 {
-	private InvocationHelper() {}
-	
-	public static Node resolve(Node left, Node call)
+	@Override
+	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
 	{
-		Argument reciever = left.getArgument();
 		Class clazz = reciever.getType();
-		
-		if (!(call instanceof Reference))
-			throw new EvaluationException(call, "Can not invoke " + call);
-		
-		Object result;
-		Reference ref = (Reference) call;
-		Argument[] args = ref.resolveArguments();
 		if (args == null)
 		{
-			try
-			{
-				Field field = findField(clazz, ref.getName());
-				result = field.get(reciever.asObject());
-			}
-			catch (NoSuchFieldException e)
-			{
-				throw new EvaluationException(call, "Field " + ref.getName() + " not found for " + clazz.getName(), e);
-			}
-			catch (Exception e)
-			{
-				throw new EvaluationException(call, "Can not invoke " + ref.getName(), e);
-			}
+			Field field = findField(clazz, name);
+			if (reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug)
+				System.out.println("Invoke: " + field);
+			
+			return field.get(reciever.asObject());
 		}
 		else
 		{
-			Method method = findMethod(clazz, ref.getName(), args);
+			Method method = findMethod(clazz, name, args);
 			if (method == null)
-			{
-				StringBuilder builder = new StringBuilder();
-				builder.append("Method ").append(ref.getName());
-				builder.append('(');
-				for (int i = 0; i < args.length; i++)
-				{
-					if (i > 0) builder.append(", ");
-					builder.append(args[i].toString());
-				}
-				builder.append(')');
-				builder.append(" not found for ").append(clazz.getName());
-				throw new EvaluationException(builder.toString());
-			}
+				throw new NoSuchMethodException(name);
 			
-			try
-			{
-				if (left.getExpression().getConfig().debug)
-					System.out.println("Invoke: " + method);
-				result = callMethod(method, reciever, args);
-			}
-			catch (Exception e)
-			{
-				throw new EvaluationException(call, "Can not invoke " + ref.getName(), e);
-			}
+			if (reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug)
+				System.out.println("Invoke: " + method);
+			
+			return callMethod(method, reciever, args);
 		}
-		return (Node) Config.wrap(left, result);
 	}
 	
-	private static Field findField(Class clazz, String name) throws SecurityException, NoSuchFieldException
+	private Field findField(Class clazz, String name) throws NoSuchFieldException
 	{
 		return clazz.getField(name);
 	}
 
-	private static Method findMethod(Class clazz, String callName, Argument[] args)
+	private Method findMethod(Class clazz, String callName, Argument[] args)
 	{
 		Method method = null;
 		METHOD_LOOP:
@@ -96,7 +65,7 @@ public class InvocationHelper
 		return method;
 	}
 
-	private static Object callMethod(Method method, Argument reciever, Argument[] args)
+	private Object callMethod(Method method, Argument reciever, Argument[] args)
 			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
 		if (args.length > 0)
@@ -115,7 +84,7 @@ public class InvocationHelper
 		}
 	}
 	
-	private static boolean canConvertArgument(Class targetType, Argument arg)
+	private boolean canConvertArgument(Class targetType, Argument arg)
 	{
 		if (targetType.isPrimitive())
 		{
@@ -150,7 +119,7 @@ public class InvocationHelper
 		return false;
 	}
 	
-	private static Object convertArgument(Class targetType, Argument arg)
+	private Object convertArgument(Class targetType, Argument arg)
 	{
 		if (targetType.isArray()) return arg.asList().toArray();
 		
