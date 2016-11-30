@@ -25,7 +25,7 @@ package tws.expression;
  * &lt;  Kleiner
  * &gt;= Gößer gleich
  * &lt;= Kleiner gleich
- * == Gleich
+ * =  Gleich
  * != Ungleich
  * &amp;  Und
  * |  Oder
@@ -48,7 +48,7 @@ package tws.expression;
  * <p>
  * Variablen können für einen späteren Zugriff gespeichert werden.
  * Dazu kann der interne Kontainer mit {@link Config#useVariables} an geschaltet werden oder
- * ein externer Resolver benutrzt werden.
+ * ein externer Resolver benutzt werden.
  * <pre>
  * new Expression("var := 5").evaluate() == 5;
  * new Expression("var").evaluate() == 5</pre>
@@ -60,11 +60,11 @@ package tws.expression;
  * Im Zusammenhang mit Variablenzugriffen kann auf Elemente von <b>Arrays und Listen</b> zugegriffen werden.
  * Die Syntax für Mehrdimensionale Arrays entspricht dabei der Form in Java.
  * </p>
- * <i>Sei array1D ist ein 1-Dimensionales Array oder eine Liste vom Typ {@link java.util.List}:</i>
+ * <i>Sei array1D ein 1-Dimensionales Array oder eine Liste vom Typ {@link java.util.List}:</i>
  * <pre>new Expression("array1D[1]").evaluate();</pre>
- * <i>Sei array2D ist ein 2-Dimensionales Array oder eine verschachtelte Liste vom Typ {@link java.util.List}:</i>
+ * <i>Sei array2D ein 2-Dimensionales Array oder eine verschachtelte Liste vom Typ {@link java.util.List}:</i>
  * <pre>new Expression("array2D[1][2]").evaluate();</pre>
- * <p>Das definiert und Zuweisen einzelner Array-Elemente ist ebenfalls möglich.
+ * <p>Das Definieren und Zuweisen einzelner Array-Elemente ist ebenfalls möglich.
  * <pre>new Expression("array[2] := [1, 2, [3, 4]]").evaluate();</pre>
  * </p>
  * @author TheWhiteShadow
@@ -113,11 +113,6 @@ public class Expression
 	public String getSourceString()
 	{
 		return sourceString;
-	}
-	
-	ExpressionParser getParser()
-	{
-		return parser;
 	}
 
 	/**

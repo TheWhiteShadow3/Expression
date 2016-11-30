@@ -1,6 +1,7 @@
 package tws.expression;
 
 import java.text.Collator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -22,6 +23,7 @@ public final class Config
 {
 	/**
 	 * Definiert Konstanten, die die Interpretation und Konvertierung von boolschen Werten bestimmen.
+	 * @see NullCast
 	 */
 	public static final class BooleanBehavor
 	{
@@ -49,23 +51,34 @@ public final class Config
 		 * Konvertiert den boolschen Wert <code>false</code> bei Bedarf zu 0 und den Wert <code>true</code> zu 1.
 		 */
 		public static final int BOOLEAN_TO_NUMBER	= 8;
-
+		/**
+		 * Konvertiert <code>null</code> bei Bedarf zum boolschen Wert <code>false</code> alles andere zu <code>true</code>.
+		 */
+		public static final int IS_NOT_NULL			= 16;
 	}
 	
 	/**
 	 * Definiert Konstanten, die die Konvertierung von <code>null</code> bestimmen.
+	 * @see BooleanBehavor
 	 */
-	public static final class NullBehavor
+	public static final class NullCast
 	{
+		/**
+		 * Null wird nicht konvertiert und wift stattdessen eine Exception.
+		 */
 		public static final int NONE	= 0;
+		/**
+		 * Konvertiert <code>null</code> bei Bedarf zu einer 0.
+		 */
+		public static final int TO_ZERO	= 1;
 		/**
 		 * Konvertiert <code>null</code> bei Bedarf zu einer leeren Zeichenkette.
 		 */
-		public static final int TO_EMPTY_STRING	= 1;
+		public static final int TO_EMPTY_STRING	= 2;
 		/**
-		 * Konvertiert <code>null</code> bei Bedarf zum boolschen Wert false.
+		 * Konvertiert <code>null</code> bei Bedarf zu einer leeren Liste.
 		 */
-		public static final int TO_FALSE		= 2;
+		public static final int TO_EMPTY_LIST	= 4;
 	}
 	
 	/**
@@ -81,10 +94,10 @@ public final class Config
 	public int booleanBehavor = BooleanBehavor.ONLY_BOOLEAN;
 	
 	/**
-	 * Eine Kombintion aus Werten der Klasse {@link NullBehavor}, die die Konvertierung von null bestimmt.
-	 * Default ist {@link NullBehavor#NONE}
+	 * Eine Kombintion aus Werten der Klasse {@link NullCast}, die die Konvertierung von null bestimmt.
+	 * Default ist {@link NullCast#NONE}
 	 */
-	public int nullBehavor = NullBehavor.NONE;
+	public int nullCast = NullCast.NONE;
 	
 	/**
 	 * Gibt an, ob vordefinierte Konstanten ausgewertet werden sollen.
@@ -119,7 +132,7 @@ public final class Config
 	 * Der Invoker für dynamische Funktionen und Felder.
 	 * Default ist <code>null</code>.
 	 */
-	public Invoker invocator;
+	public Invoker invoker;
 	
 	/**
 	 * Der Collator, der für String-Vergleiche benutzt werden soll.
@@ -146,12 +159,12 @@ public final class Config
 	{
 		this.internalResolver = config.internalResolver;
 		this.booleanBehavor = config.booleanBehavor;
-		this.nullBehavor = config.nullBehavor;
+		this.nullCast = config.nullCast;
 		this.usePredefinedContants = config.usePredefinedContants;
 		this.usePredefinedFunctions = config.usePredefinedFunctions;
 		this.useVariables = config.useVariables;
 		this.resolver = config.resolver;
-		this.invocator = config.invocator;
+		this.invoker = config.invoker;
 		this.stringCollator = config.stringCollator;
 	}
 	
@@ -182,15 +195,18 @@ public final class Config
 			throw new EvaluationException("Can not cast String to boolean.");
 		}
 		
-		if (arg.isNull())
-		{
-			if ((nullBehavor & NullBehavor.TO_FALSE) != 0) return false;
-			
-			throw new EvaluationException("Can not cast null to boolean."); 
-		}
+//		if (arg.getType() == List.class)
+//		{
+//		
+//			if ((booleanBehavor & BooleanBehavor.NON_EMPTY_LISTS) != 0) return arg.asList().isEmpty();
+//			
+//			throw new EvaluationException("Can not cast List to boolean.");
+//		}
 		
-		if (arg instanceof ObjectArgument && (nullBehavor & NullBehavor.TO_FALSE) != 0)
-			return true;
+		if ((booleanBehavor & BooleanBehavor.IS_NOT_NULL) != 0)
+		{
+			return !arg.isNull();
+		}
 		
 		throw new EvaluationException("Can not cast " + arg.getType().getName() + " to boolean."); 
 	}
@@ -230,7 +246,10 @@ public final class Config
 	
 	Object invoke(Argument reciever, String name, Argument[] args) throws Exception
 	{
-		return internalResolver.invoke(reciever, name, args);
+		Invoker r = invoker;
+		if (r == null) throw new EvaluationException("No invoker defined.");
+		
+		return r.invoke(reciever, name, args);
 	}
 	
 	/**
@@ -249,19 +268,9 @@ public final class Config
 	public void checkBooleanToNumber()
 	{
 		if ((booleanBehavor & BooleanBehavor.BOOLEAN_TO_NUMBER) == 0)
-			throw new EvaluationException("Can not cast boolean to number."); 
+			throw new ClassCastException("Can not cast boolean to number."); 
 	}
 	
-	/**
-	 * Überprüft, ob <code>null</code> in eine leere Zeichenkette konvertiert werden sollen.
-	 * @throws EvaluationException Wenn <code>null</code> nicht in eine leere Zeichenkette konvertiert werden sollen.
-	 */
-	public void checkNullToString()
-	{
-		if ((nullBehavor & NullBehavor.TO_EMPTY_STRING) == 0)
-			throw new EvaluationException("Can not cast null to String."); 
-	}
-
 	static Argument wrap(Node parent, Object obj)
 	{
 		if (obj == null) return new NullArgument(parent);
@@ -278,6 +287,9 @@ public final class Config
 		
 		if (obj instanceof String)
 			return new StringArgument(parent, (String) obj);
+		
+		if (obj instanceof List || obj.getClass().isArray())
+			return new ListArgument(parent, obj);
 		
 		return new ObjectArgument(parent, obj);
 	}

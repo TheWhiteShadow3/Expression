@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-class InternalResolver implements Resolver, Invoker
+class InternalResolver implements Resolver
 {
 	private static final Double PI = Math.PI;
 	private static final Double E = Math.E;
@@ -115,12 +115,12 @@ class InternalResolver implements Resolver, Invoker
 		return Collections.unmodifiableMap(variables);
 	}
 
-	@Override
-	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
-	{
-		Invoker r = config.invocator;
-		if (r == null) throw new EvaluationException("No invoker defined.");
-		
-		return r.invoke(reciever, name, args);
-	}
+//	@Override
+//	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
+//	{
+//		Invoker r = config.invoker;
+//		if (r == null) throw new EvaluationException("No invoker defined.");
+//		
+//		return r.invoke(reciever, name, args);
+//	}
 }

@@ -321,36 +321,27 @@ class Symbols
 		{
 			InfixOperation op = (InfixOperation) left;
 			Node[] nodes = left.getChildren();
-			Object reciever = nodes[0].getArgument().asObject();
+			Argument obj = nodes[0].getArgument();
 			
 			if (op.getSymbol().getOperator() == Operator.INDEX)
 			{
+				if (!(obj instanceof ListArgument))
+					throw new EvaluationException(left, "Invalid reference type " + obj.getClass().getName());
+				
+				ListArgument list = (ListArgument) obj;
 				int index = (int) nodes[1].getArgument().asLong();
-				assignToArray(left, reciever, index, arg);
+					
+				list.set(index, arg);
 				return (Node) arg;
 			}
-			// TODO: Das Setzen von Feldern ist noch nicht implementiert. Würde aber an dieser Stelle stehen.
-//			else if (op.getSymbol().getOperator() == Operator.DOT)
-//			{
-//				Reference ref = (Reference) nodes[1];
-//				assignToField(left, reciever, ref.getName(), ref.getArgument());
-//				return (Node) arg;
-//			}
+			else if (op.getSymbol().getOperator() == Operator.DOT)
+			{
+				((Reference) nodes[1]).setArguments(new Node[] {(Node) arg});
+				dot(nodes[0], nodes[1]);
+				return (Node) arg;
+			}
 		}
 		throw new EvaluationException(left, "Invalid Type for Operation: ASSIGN");
-	}
-	
-	private static void assignToArray(Node node, Object array, int index, Argument arg)
-	{
-		if (array.getClass().isArray())
-		{
-			java.lang.reflect.Array.set(array, index, arg.asObject());
-		}
-		else if (array instanceof List)
-		{
-			((List) array).set(index, arg.asObject());
-		}
-		else throw new EvaluationException(node, "Invalid reference type " + array.getClass().getName());
 	}
 
 	private static Node index(Node left, Node right)
@@ -360,11 +351,15 @@ class Symbols
 		{
 			if (left instanceof Reference)
 			{
-				return (Node) Config.wrap(left, ((Reference) left).resolve().asList().get(index));
+				Argument arg = ((Reference) left).resolve();
+				if (!(arg instanceof ListArgument))
+					throw new EvaluationException(right, "Invalid list type " + arg.getType().getName() + ".");
+				
+				return (Node) Config.wrap(left, ((ListArgument) arg).get(index));
 			}
-			else if (left instanceof Array)
+			else if (left instanceof ListArgument)
 			{
-				return ((Array) left).getChildren()[index];
+				return ((ListArgument) left).getChildren()[index];
 			}
 			else
 			{
@@ -390,7 +385,7 @@ class Symbols
 		try
 		{
 			Config config = recieverNode.getExpression().getConfig();
-			Object result = config.internalResolver.invoke(reciever, name, args);
+			Object result = config.invoke(reciever, name, args);
 			return (Node) Config.wrap(recieverNode, result);
 		}
 		catch (NoSuchFieldException e)

@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Der Default-Invoker für das Auflösen von Feldern und Methoden in Ausdrücken.
  * @author TheWhiteShadow
- * @see Config#invocator
+ * @see Config#invoker
  */
 public class DefaultInvoker implements Invoker
 {
@@ -20,12 +20,24 @@ public class DefaultInvoker implements Invoker
 		{
 			Field field = findField(clazz, name);
 			if (reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug)
-				System.out.println("Invoke: " + field);
+				System.out.println("Get: " + field);
 			
 			return field.get(reciever.asObject());
 		}
 		else
 		{
+			if (args.length == 1) try
+			{
+				Field field = findField(clazz, name);
+					
+				if (reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug)
+					System.out.println("Set: " + field);
+				
+				field.set(reciever.asObject(), convertArgument(field.getType(), args[0]));
+				return null;
+			}
+			catch(NoSuchFieldException e) {}
+			
 			Method method = findMethod(clazz, name, args);
 			if (method == null)
 				throw new NoSuchMethodException(name);

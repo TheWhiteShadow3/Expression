@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -24,10 +26,18 @@ public class EvaluationTest
 {
 	/** Wert den der Resolver bei 'blub' auflösen soll. */
 	private static Object blub = null;
+	
 	/** Wert den der Resolver bei 'obj' auflösen soll. */
 	private static Object obj = new Object();
+	
 	/** Wert den der Resolver bei 'array' auflösen soll. */
 	static int[][] array = new int[][] {{1, 2, 3}, {4, 5, 6}};
+	
+	/** Wert den der Resolver bei 'list' auflösen soll. */
+	static List<String> list = new ArrayList<String>();
+	
+	/** Wert den der Resolver bei 'carray' auflösen soll. */
+	static char[] carray = "Rose".toCharArray();
 	
 	@BeforeClass
 	public static void setup()
@@ -41,6 +51,8 @@ public class EvaluationTest
 				if ("blub".equals(refName)) return blub;
 				if ("obj".equals(refName)) return obj;
 				if ("array".equals(refName)) return array;
+				if ("list".equals(refName)) return list;
+				if ("carray".equals(refName)) return carray;
 				
 				throw new EvaluationException("");
 			}
@@ -126,7 +138,7 @@ public class EvaluationTest
 		i = (Long) new Expression("3 * 4 % 3").evaluate();
 		assertTrue(i == 0);
 		
-		b = (Boolean) new Expression("true | false & true").evaluate();
+		b = (Boolean) new Expression("true | true & false").evaluate();
 		assertTrue(b);
 		
 		System.out.println();
@@ -290,7 +302,7 @@ public class EvaluationTest
 		assertEquals(10L, arg.asLong());
 		
 		op = new Expression("4 + 2 - (4 * 7) % -2").compile();
-		// Wenn ein Wrapper benutzt wird, existiert keine echte Operation mehr im Ausdruck.
+		// Wenn ein Wrapper benutzt wird, existiert keine echte Operation mehr im Ausdruck, da dieser vollständig aufgelöst wurde.
 		assertTrue(op instanceof WrapperOperation);
 		
 		System.out.println();
@@ -302,6 +314,7 @@ public class EvaluationTest
 		System.out.println("Boolean Verhalten");
 		Config config = new Config();
 		config.debug = true;
+		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		config.booleanBehavor = Config.BooleanBehavor.ONLY_BOOLEAN;
 		
 		new Expression("true", config).resolve().asBoolean();
@@ -349,9 +362,10 @@ public class EvaluationTest
 		assertEquals(1, new Expression("true", config).resolve().asLong());
 		assertEquals(0, new Expression("false", config).resolve().asLong());
 		
-		config.nullBehavor = Config.NullBehavor.TO_FALSE;
+		config.booleanBehavor = Config.BooleanBehavor.IS_NOT_NULL;
 		
 		assertFalse(new Expression("null", config).resolve().asBoolean());
+		assertTrue(new Expression("array", config).resolve().asBoolean());
 		
 		System.out.println();
 	}
@@ -377,6 +391,7 @@ public class EvaluationTest
 		Config config = new Config();
 		config.debug = true;
 		Object result;
+		long l;
 		boolean b;
 		
 		result = new Expression("null").evaluate();
@@ -399,12 +414,12 @@ public class EvaluationTest
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
-		config.nullBehavor = Config.NullBehavor.TO_EMPTY_STRING;
+		config.nullCast = Config.NullCast.TO_EMPTY_STRING;
 		
 		result = new Expression("'test' + null", config).evaluate();
 		assertEquals("test", result);
 		
-		//XXX: Ob das so Wünschenswert ist, ist fraglich
+		//Definitionsgemäß OK, da der Oder-Zweig nicht aufgelöst wird.
 		b = new Expression("true | null").resolve().asBoolean();
 		assertTrue(b);
 		
@@ -415,10 +430,15 @@ public class EvaluationTest
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
-		config.nullBehavor = Config.NullBehavor.TO_FALSE;
+		config.nullCast = Config.NullCast.TO_EMPTY_LIST;
 		
-		b = new Expression("true & null", config).resolve().asBoolean();
-		assertFalse(b);
+		result = new Expression("null", config).resolve().asList();
+		assertEquals(Collections.EMPTY_LIST, result);
+		
+		config.nullCast = Config.NullCast.TO_ZERO;
+		
+		l = new Expression("null", config).resolve().asLong();
+		assertEquals(0L, l);
 		
 		System.out.println();
 	}
@@ -437,11 +457,6 @@ public class EvaluationTest
 
 		result = new Expression("obj").evaluate();
 		assertEquals(obj, result);
-		
-		config.nullBehavor = Config.NullBehavor.TO_FALSE;
-		
-		b = new Expression("null | obj", config).resolve().asBoolean();
-		assertTrue(b);
 	}
 	
 	@Test
@@ -464,6 +479,9 @@ public class EvaluationTest
 		result = new Expression("'test'[2]", config).resolve().asString();
 		assertEquals("s", result);
 		
+		long l = new Expression("[1, 2+4, 3][1]", config).resolve().asLong();
+		assertEquals(6, l);
+		
 		try
 		{
 			result = new Expression("array[1, 0] > 3", config).compile();
@@ -477,9 +495,7 @@ public class EvaluationTest
 			fail("Fail: " + result);
 		}
 		catch(EvaluationException e) { handleException(e); }
-		
-		long l = new Expression("[1, 2+4, 3][1]", config).resolve().asLong();
-		assertEquals(6, l);
+
 	}
 	
 	@Test
@@ -488,9 +504,11 @@ public class EvaluationTest
 		System.out.println("Assignment");
 		Config config = new Config();
 		config.debug = true;
+		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		config.useVariables = true;
 		
 		Object result;
+		List list;
 		boolean b;
 		
 		try
@@ -520,9 +538,18 @@ public class EvaluationTest
 		assertEquals(2L, ((List<List<?>>) result).get(0).get(1));
 		
 		b = new Expression("abc[0][1] := xyz", config).resolve().asBoolean();
+		assertTrue(b);
 		
 		b = new Expression("abc[0][1]", config).resolve().asBoolean();
 		assertTrue(b);
+		
+		// Seit 0.3 funktioniert die Zuweisung zu einem int-array.
+		list = new Expression("array[0][0] := 7", config).resolve().asList();
+		assertEquals(7L, list.get(0));
+		assertEquals(7L, array[0][0]);
+		
+		list = new Expression("carray[0] := 'P'", config).resolve().asList();
+		assertEquals("Pose", new String(carray));
 	}
 	
 	@Test
@@ -541,7 +568,7 @@ public class EvaluationTest
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
-		config.invocator = new DefaultInvoker();
+		config.invoker = new DefaultInvoker();
 		
 		long l = new Expression("'abc'.length()", config).resolve().asLong();
 		assertEquals(3, l);
@@ -588,13 +615,9 @@ public class EvaluationTest
 		result = new Expression("pantsu.SHIRO_PANTSU.colors()", config).resolve().asList().get(0);
 		assertEquals("shiro", result);
 		
-		// Zur Implementierung fürs Setzen von Feldern Siehe tws.expression.Symbol.java
-		try
-		{
-			result = new Expression("pantsu.SHIRO_PANTSU := null", config).resolve();
-			fail("Fail: " + result);
-		}
-		catch(EvaluationException e) { handleException(e); }
+		// Auch statische Felder müssen von einem Objekt aus aufgerufen werden!
+		result = new Expression("pantsu.SHIRO_PANTSU := pantsu", config).resolve().asObject();
+		assertEquals(config.getVariables().get("pantsu"), result);
 	}
 	
 	// Klasse für die Invoke-Testreihe

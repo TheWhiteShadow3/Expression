@@ -16,34 +16,46 @@ public class NullArgument extends Node implements Argument
 		super(parent);
 	}
 
+	@Override
 	public Class<?> getType() { return void.class; }
+	@Override
 	public boolean isNumber() { return false; }
+	@Override
 	public boolean isString() { return false; }
+	@Override
 	public boolean isNull() { return true; }
+	@Override
 	public boolean isBoolean() { return false; }
+	@Override
 	public boolean isObject() { return false; }
 	
+	@Override
 	public boolean asBoolean()
 	{
 		return getExpression().getConfig().isTrue(this);
 	}
 
+	@Override
 	public String asString()
 	{
-		getExpression().getConfig().checkNullToString();
+		checkNullCast(Config.NullCast.TO_EMPTY_STRING, String.class);
 		return "";
 	}
 
+	@Override
 	public double asDouble()
 	{
 		return Double.NaN;
 	}
 
+	@Override
 	public long asLong()
 	{
-		throw new EvaluationException("Can not cast null to long.");
+		checkNullCast(Config.NullCast.TO_ZERO, long.class);
+		return 0;
 	}
 
+	@Override
 	public Object asObject()
 	{
 		return null;
@@ -61,8 +73,16 @@ public class NullArgument extends Node implements Argument
 		return this;
 	}
 	
+	@Override
 	public List<?> asList()
 	{
+		checkNullCast(Config.NullCast.TO_EMPTY_LIST, List.class);
 		return Collections.EMPTY_LIST;
+	}
+	
+	private void checkNullCast(int cast, Class<?> type)
+	{
+		if ((getExpression().getConfig().nullCast & cast) == 0)
+			throw new EvaluationException(this, "Can not cast null to " + type.getSimpleName() + "."); 
 	}
 }
