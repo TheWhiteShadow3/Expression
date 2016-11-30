@@ -239,7 +239,7 @@ public final class Config
 		internalResolver.assign(name, value);
 	}
 	
-	Object resolve(String name, Argument[] args) throws Exception
+	Object resolve(String name, Argument[] args) throws EvaluationException
 	{
 		return internalResolver.resolve(name, args);
 	}

@@ -39,6 +39,11 @@ class InternalResolver implements Resolver
 			if ("exp".equals(name)) return Math.exp(getSingleArgument(args).asDouble());
 			if ("log".equals(name)) return Math.log(getSingleArgument(args).asDouble());
 			if ("log10".equals(name)) return Math.log10(getSingleArgument(args).asDouble());
+			if ("pow".equals(name))
+			{
+				if (args.length != 2) throw new EvaluationException("invalid Number of Arguments.");
+				return Math.pow(args[0].asDouble(), args[1].asDouble());
+			}
 		}
 		else if (args == null)
 		{

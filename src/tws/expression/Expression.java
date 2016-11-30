@@ -3,7 +3,7 @@ package tws.expression;
 
 /**
  * Ermöglicht das Auswerten von Ausdrücken, die als Strings übergeben werden.
- * Es können mathematische-, logische- und String-Operationen, Vergleiche, Variablen und Funktionen benutzt werden.
+ * Es können mathematische-, logische-, String- und Array-Operationen, Vergleiche, Variablen und Funktionen benutzt werden.
  * Ausdrücke können kompiliert werden um mit verschiedenen Parametern zu einem späteren Zeitpunkt aufgelöst zu werden.
  * Das Verhalten bei unterschiedlichen Typen, kann konfiguriert werden um z.B. Zahlen statt boolsche Werte zu verwenden.
  * <p>Beispiel:
@@ -13,6 +13,8 @@ package tws.expression;
  * </p>
  * <b>Operatoren</b>, die benutzt werden können sortiert nach der Priorität:
  * <pre>
+ * .  Funktion oder Eigenschaft eines Objekts (Funktioniert nur mit einem {@link Invoker})
+ * [] Index
  * !  Nicht
  * %  Modulo
  * *  Multiplikation
@@ -152,20 +154,5 @@ public class Expression
 	public Object evaluate() throws EvaluationException
 	{
 		return resolve().asObject();
-		
-//		if (result.isNull()) return null;
-//		if (result.isBoolean()) return result.asBoolean();
-//		if (result.isNumber())
-//		{
-//			if (result.getType() == double.class || result.getType() == Double.class)
-//				return result.asDouble();
-//			else
-//				return result.asLong();
-//		}
-//		if (result.isString()) return result.asString();
-//		if (result.isObject()) return result.asObject();
-//		
-//		// Sollte nicht eintreten.
-//		throw new EvaluationException("Invalid result Type: " + result.getType());
 	}
 }

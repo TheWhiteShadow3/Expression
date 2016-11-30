@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
-<!-- Build-File für die Cuina-Engine -->
+<!-- Build-File für die Expression-Library -->
 
 <project name="Expression" basedir="." default="main">
 	
