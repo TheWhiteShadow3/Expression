@@ -131,7 +131,7 @@ new Expression("myInt", config).resolve();
 ## Eingene Konstanten und Funktionen
 Es können auch eigene Konstanten und Funktionen definiert werden.
 
-Siehe hierfür: [Funktionen und Konstanten](./FunctionsAndConstants.txt)
+Siehe hierfür: [Funktionen und Konstanten](./FunctionsAndConstants.md)
 
 ## Arrays und Listen
 Im Zusammenhang mit Variablenzugriffen kann auf Elemente von **Arrays und Listen** zugegriffen werden.
