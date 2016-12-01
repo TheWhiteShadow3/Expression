@@ -57,40 +57,40 @@ Which can be used sorted by priority:
  * &  And
  * |  Or
  * ^  exclusive Or
- *: = assignment
+ * := assignment
 
 ## Predefined constants
 
  * PI 3.141592653589793
- * E 2.718281828459045
+ * E  2.718281828459045
 
 ## Predefined functions
 
  * min
- * Max
+ * max
  * sin
  * cos
  * tan
  * asin
- * Acos
+ * acos
  * atan
- * Atan2
- * Sinh
- * Cosh
- * Tanh
- * Hypot
+ * atan2
+ * sinh
+ * cosh
+ * tanh
+ * hypot
  * abs
- * Sign (Math.signum)
+ * sign (Math.signum)
  * exp
  * log
- * Log10
+ * log10
  * round
  * floor
  * ceil
- * Rad (Math.toRadians)
- * Deg (Math.toDegrees)
+ * rad (Math.toRadians)
+ * deg (Math.toDegrees)
  * pow
- * edge
+ * rand
 
 *Unless otherwise specified, the functions are the same as those in the java.lang.Math class.*
 
