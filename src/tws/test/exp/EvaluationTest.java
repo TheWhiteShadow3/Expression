@@ -105,6 +105,9 @@ public class EvaluationTest
 		i = new Expression("5 >>> 2").resolve().asLong();
 		assertTrue(i == 1);
 		
+		d = new Expression("2E-16").resolve().asDouble();
+		assertEquals(2E-16, d, 0);
+		
 		try
 		{
 			Operation op = new Expression("- 2").compile();

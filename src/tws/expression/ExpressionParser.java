@@ -211,13 +211,20 @@ public class ExpressionParser
 				
 				if (c > 47 && c < 58) // Literal beginnt mit einer Zahl.
 				{
-					if (pos < lenght && string.charAt(pos) == '.')
+					boolean isDouble = false;
+					if (pos < lenght)
 					{
-						do { pos++; }
-						while( pos < lenght && isIdentifier(string.charAt(pos)) );
+						char c0 = string.charAt(pos-1);
+						char c1 = string.charAt(pos);
+						if (c1 == '.' || (c1 == '-' && (c0 == 'e' || c0 == 'E')))
+						{
+							isDouble = true;
+							do { pos++; }
+							while( pos < lenght && isIdentifier(string.charAt(pos)) );
+						}
 					}
 					String str = string.substring(start, pos);
-					if (str.indexOf('.') != -1)
+					if (isDouble)
 						args.add( new FloatArgument(exp, start, Double.parseDouble(str)) );
 					else
 						args.add( new IntegerArgument(exp, start, Long.parseLong(str)) );
