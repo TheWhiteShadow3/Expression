@@ -25,24 +25,43 @@ class InternalResolver implements Resolver
 		{
 			if ("min".equals(name)) return min(args);
 			if ("max".equals(name)) return max(args);
-			if ("sin".equals(name)) return Math.sin(getSingleArgument(args).asDouble());
-			if ("cos".equals(name)) return Math.cos(getSingleArgument(args).asDouble());
-			if ("tan".equals(name)) return Math.tan(getSingleArgument(args).asDouble());
-			if ("asin".equals(name)) return Math.asin(getSingleArgument(args).asDouble());
-			if ("acos".equals(name)) return Math.acos(getSingleArgument(args).asDouble());
-			if ("atan".equals(name)) return Math.atan(getSingleArgument(args).asDouble());
-			if ("sinh".equals(name)) return Math.sinh(getSingleArgument(args).asDouble());
-			if ("cosh".equals(name)) return Math.cosh(getSingleArgument(args).asDouble());
-			if ("tanh".equals(name)) return Math.tanh(getSingleArgument(args).asDouble());
-			if ("abs".equals(name)) return Math.abs(getSingleArgument(args).asDouble());
-			if ("sign".equals(name)) return Math.signum(getSingleArgument(args).asDouble());
-			if ("exp".equals(name)) return Math.exp(getSingleArgument(args).asDouble());
-			if ("log".equals(name)) return Math.log(getSingleArgument(args).asDouble());
-			if ("log10".equals(name)) return Math.log10(getSingleArgument(args).asDouble());
-			if ("pow".equals(name))
+			
+			if (args.length == 0)
 			{
-				if (args.length != 2) throw new EvaluationException("invalid Number of Arguments.");
-				return Math.pow(args[0].asDouble(), args[1].asDouble());
+				if ("rand".equals(name)) return Math.random();
+			}
+			else if (args.length == 1)
+			{
+				double d = args[0].asDouble();
+				
+				if ("sin".equals(name)) return Math.sin(d);
+				if ("cos".equals(name)) return Math.cos(d);
+				if ("tan".equals(name)) return Math.tan(d);
+				if ("asin".equals(name)) return Math.asin(d);
+				if ("acos".equals(name)) return Math.acos(d);
+				if ("atan".equals(name)) return Math.atan(d);
+				if ("sinh".equals(name)) return Math.sinh(d);
+				if ("cosh".equals(name)) return Math.cosh(d);
+				if ("tanh".equals(name)) return Math.tanh(d);
+				if ("abs".equals(name)) return Math.abs(d);
+				if ("sign".equals(name)) return Math.signum(d);
+				if ("exp".equals(name)) return Math.exp(d);
+				if ("log".equals(name)) return Math.log(d);
+				if ("log10".equals(name)) return Math.log10(d);
+				if ("floor".equals(name)) return Math.floor(d);
+				if ("round".equals(name)) return Math.round(d);
+				if ("ceil".equals(name)) return Math.ceil(d);
+				if ("rad".equals(name)) return Math.toRadians(d);
+				if ("deg".equals(name)) return Math.toDegrees(d);
+			}
+			else if (args.length == 2)
+			{
+				double d1 = args[0].asDouble();
+				double d2 = args[1].asDouble();
+				
+				if ("pow".equals(name)) return Math.pow(d1, d2);
+				if ("atan2".equals(name)) return Math.atan2(d1, d2);
+				if ("hypot".equals(name)) return Math.hypot(d1, d2);
 			}
 		}
 		else if (args == null)
@@ -63,32 +82,26 @@ class InternalResolver implements Resolver
 		return r.resolve(name, args);
 	}
 
-	private Argument getSingleArgument(Argument[] args)
-	{
-		if (args.length != 1) throw new EvaluationException("invalid Number of Arguments.");
-		return args[0];
-	}
-	
 	private Argument min(Argument[] args)
 	{
-		if (args.length == 0) throw new EvaluationException("invalid Number of Arguments.");
+		if (args.length == 0) throw new EvaluationException("Invalid number of arguments.");
 		
 		Argument min = args[0];
 		for(int i = 1; i < args.length; i++)
 		{
-			if (min.asDouble() < args[i].asDouble()) min = args[i];
+			if (min.asDouble() > args[i].asDouble()) min = args[i];
 		}
 		return min;
 	}
 	
 	private Argument max(Argument[] args)
 	{
-		if (args.length == 0) throw new EvaluationException("invalid Number of Arguments.");
+		if (args.length == 0) throw new EvaluationException("Invalid number of arguments.");
 		
 		Argument max = args[0];
 		for(int i = 1; i < args.length; i++)
 		{
-			if (max.asDouble() > args[i].asDouble()) max = args[i];
+			if (max.asDouble() < args[i].asDouble()) max = args[i];
 		}
 		return max;
 	}
@@ -119,13 +132,4 @@ class InternalResolver implements Resolver
 	{
 		return Collections.unmodifiableMap(variables);
 	}
-
-//	@Override
-//	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
-//	{
-//		Invoker r = config.invoker;
-//		if (r == null) throw new EvaluationException("No invoker defined.");
-//		
-//		return r.invoke(reciever, name, args);
-//	}
 }

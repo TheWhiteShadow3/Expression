@@ -119,6 +119,13 @@ public class EvaluationTest
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
+		try
+		{
+			Operation op = new Expression(".2").compile();
+			fail("Fail: " + op.toString());
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
 		System.out.println();
 	}
 	
@@ -374,12 +381,17 @@ public class EvaluationTest
 	public void testFunktions()
 	{
 		System.out.println("Variablen und Funktionen");
+		
+		double d;
+		d = new Expression("min(2, 7, 5, 1)").resolve().asDouble();
+		assertEquals(1, d, 0.);
+		
+		d = new Expression("sin(PI)").resolve().asDouble();
+		assertEquals(0, d, 2E-16);
+		
 		blub = "pantsu";
 		String str = (String) new Expression("'atashi no ' + blub()").evaluate();
 		assertEquals("atashi no " + blub, str);
-		
-		Double d = (Double) new Expression("sin(PI)").evaluate();
-		assertTrue(Math.abs(d) < 0.0000001);
 		
 		System.out.println();
 	}
@@ -561,16 +573,17 @@ public class EvaluationTest
 		config.useVariables = true;
 		Object result;
 		
+		Operation op = new Expression("'abc'.length()", config).compile();
 		try
 		{
-			result = new Expression("'abc'.length()", config).resolve();
+			result = op.resolve();
 			fail("Fail: " + result);
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
 		config.invoker = new DefaultInvoker();
 		
-		long l = new Expression("'abc'.length()", config).resolve().asLong();
+		long l = op.resolve().asLong();
 		assertEquals(3, l);
 		
 		String str = new Expression("'abc'.charAt(0)", config).resolve().asString();

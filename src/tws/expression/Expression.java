@@ -54,9 +54,8 @@ package tws.expression;
  * <pre>
  * new Expression("var := 5").evaluate() == 5;
  * new Expression("var").evaluate() == 5</pre>
- * Die Gültigkeit der Variablen hängt bei interner Verwaltung direkt mit dem Config-Objekt zusammen.
+ * Die Gültigkeit der Variablen hängt direkt mit dem Config-Objekt zusammen.
  * Nur Expressions mit gleichem Config-Objekt sehen die gleichen Variablen.
- * Bei externer Verwaltung über einen Resolver ist der Scope allein dem Benutzer überlassen.
  * </p>
  * <p>
  * Im Zusammenhang mit Variablenzugriffen kann auf Elemente von <b>Arrays und Listen</b> zugegriffen werden.
