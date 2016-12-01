@@ -57,8 +57,43 @@ die benutzt werden können sortiert nach der Priorität:
  * ^  Exklusiv-Oder
  * := Zuweisung
 
-## Variablen und Funktionen
-werden durch einen *Resolver* ersetzt, der in der Konfiguration gesetzt werden kann.
+## Vordefinierte Konstanten
+
+ * PI 3.141592653589793
+ * E  2.718281828459045
+
+## Vordefinierte Funktonen
+
+ * min
+ * max
+ * sin
+ * cos
+ * tan
+ * asin
+ * acos
+ * atan
+ * atan2
+ * sinh
+ * cosh
+ * tanh
+ * hypot
+ * abs
+ * sign (Math.signum)
+ * exp
+ * log
+ * log10
+ * round
+ * floor
+ * ceil
+ * rad (Math.toRadians)
+ * deg (Math.toDegrees)
+ * pow
+ * rand
+
+*Wenn nichts anderes angegeben ist, entsprechen die Funktionen denen in der java.lang.Math Klasse.*
+
+## Variablen
+Variablen werden durch einen *Resolver* ersetzt, der in der Konfiguration gesetzt werden kann.
 Die drei vorbelegten Schlüsselwörter `true`, `false` und `null` können nicht als Namen
 für Variablen oder Funktionen benutzt werden.
 
@@ -82,9 +117,8 @@ new Expression("var := 5").evaluate() == 5;
 new Expression("var").evaluate() == 5
 ```
 
-Die Gültigkeit der Variablen hängt bei interner Verwaltung direkt mit dem Config-Objekt zusammen.
+Die Gültigkeit der Variablen hängt direkt mit dem Config-Objekt zusammen.
 Nur Expressions mit gleichem Config-Objekt sehen die gleichen Variablen.
-Bei externer Verwaltung über einen Resolver ist der Scope allein dem Benutzer überlassen.
 
 ### Beispiel:
 ```Java
@@ -93,6 +127,11 @@ config.assign("myInt", new Integer(1024));
 new Expression("myInt").resolve(); // --> Fehler!
 new Expression("myInt", config).resolve();
 ```
+
+## Eingene Konstanten und Funktionen
+Es können auch eigene Konstanten und Funktionen definiert werden.
+
+Siehe hierfür: [Funktionen und Konstanten](./FunctionsAndConstants.txt)
 
 ## Arrays und Listen
 Im Zusammenhang mit Variablenzugriffen kann auf Elemente von **Arrays und Listen** zugegriffen werden.
