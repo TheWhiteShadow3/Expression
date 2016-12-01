@@ -1,103 +1,105 @@
-# Java Expression-Library by TheWhiteShadow
+# Java Expression Library by TheWhiteShadow
 Copyright (C) 2017 by TheWhiteShadow
 
-Die Expression-Library ermöglicht das Auswerten von Ausdrücken, die als Strings übergeben werden.
-Es können mathematische-, logische-, String- und Array-Operationen, Vergleiche, Variablen und Funktionen benutzt werden.
-Ausdrücke können kompiliert werden um mit verschiedenen Parametern zu einem späteren Zeitpunkt aufgelöst zu werden.
-Das Verhalten bei unterschiedlichen Typen, kann konfiguriert werden um z.B. Zahlen statt boolsche Werte zu verwenden.
+See [german version of this document](./README_de.md)
 
-### Beispiel:
+The **Expression** library allows you to evaluate expressions that are passed as strings.
+Mathematical, logical, string, and array operations, comparisons, variables, and functions can be used.
+Expressions can be compiled to resolve with different parameters at a later time.
+The behavior for different types may be configured to, e.g. Numbers instead of boolean values.
+
+### Example:
 ```Java
-// Gibt eine Long mit dem Wert 3 zurück.
+// Returns a long value of 3.
 new Expression("1 + 2").evaluate();
-// Gibt eine Boolean mit dem Wert 3 zurück.
+// Returns a boolean value of 3.
 new Expression("1 < 2").evaluate();
 ```
 
 ```Java
-// Kompiliere den Ausdruck ohne ihn auszuwerten.
+// Compile the expression without evaluating it.
 Expression exp = new Expression("2 * pow(var, 2)").compile();
 
-//... (var setzen) ...
+// ... (set var) ...
 
-// Werte den Ausdruck als Objekt aus,
-Object obj = exp.evaluate();
-// oder als flexibel zu konvertierendes Argument.
-Argument arg = exp.resolve();
+// resolve the expression as an object,
+Object obj = exp.evaluate ();
+// or as a flexible argument to convert.
+Argument arg = exp.resolve ();
 
-// Konvertiere das Ergebnis
+// Convert the result
 long l = arg.asLong();
 double d = arg.asDouble();
 String s = arg.toString();
-//...
+// ...
 ```
-*Beim Kompilieren werden Ausdrücke bereits so weit wie möglich gekürzt ohne Variablen aufzulösen oder Funktionen aufzurufen.*
+*When compiling, expressions are already truncated as much as possible without resolving variables or calling functions.*
 
-## Operatoren
-die benutzt werden können sortiert nach der Priorität:
- * .  Funktion oder Eigenschaft eines Objekts (Funktioniert nur mit einem Invoker)
- * [] Index
- * !  Nicht
- * %  Modulo
- * *  Multiplikation
- * /  Division
- * +  Addition, String-Konkatenation 
- * -  Minus
- * << links-Shift
- * >> rechts-Shift
- * >>> Vorzeichenloser rechts-Shift
- * >  Gößer
- * <  Kleiner
- * >= Gößer gleich
- * <= Kleiner gleich
- * =  Gleich
- * != Ungleich
- * &  Und
- * |  Oder
- * ^  Exklusiv-Oder
- * := Zuweisung
+## Operators
+Which can be used sorted by priority:
+ * .  function or property of an object (works only with an Invoker)
+ * [] index
+ * !  not
+ * %  modulo
+ * *  multiplication
+ * /  division
+ * +  addition, string concatenation
+ * -  minus
+ * << left-shift
+ * >> right shift
+ * >>> Unsigned right shift
+ * >  greater then
+ * <  less then
+ * >= greater then or equal
+ * <= less than or equal
+ * =  equal
+ * != not equal
+ * &  And
+ * |  Or
+ * ^  exclusive Or
+ *: = assignment
 
-## Vordefinierte Konstanten
+## Predefined constants
 
  * PI 3.141592653589793
- * E  2.718281828459045
+ * E 2.718281828459045
 
-## Vordefinierte Funktonen
+## Predefined functions
 
  * min
- * max
+ * Max
  * sin
  * cos
  * tan
  * asin
- * acos
+ * Acos
  * atan
- * atan2
- * sinh
- * cosh
- * tanh
- * hypot
+ * Atan2
+ * Sinh
+ * Cosh
+ * Tanh
+ * Hypot
  * abs
- * sign (Math.signum)
+ * Sign (Math.signum)
  * exp
  * log
- * log10
+ * Log10
  * round
  * floor
  * ceil
- * rad (Math.toRadians)
- * deg (Math.toDegrees)
+ * Rad (Math.toRadians)
+ * Deg (Math.toDegrees)
  * pow
- * rand
+ * edge
 
-*Wenn nichts anderes angegeben ist, entsprechen die Funktionen denen in der java.lang.Math Klasse.*
+*Unless otherwise specified, the functions are the same as those in the java.lang.Math class.*
 
-## Variablen
-Variablen werden durch einen *Resolver* ersetzt, der in der Konfiguration gesetzt werden kann.
-Die drei vorbelegten Schlüsselwörter `true`, `false` und `null` können nicht als Namen
-für Variablen oder Funktionen benutzt werden.
+## Variables
+Variables are replaced by a *Resolver*, which can be set in the configuration.
+The three predefined keywords `true`, `false` and `null` can not be used as names
+For variables or functions.
 
-### Beispiel:
+### Example:
 ```Java
 Expression.DEFAULT_CONFIG.resolver = new Resolver() {
 	public Object resolve(String refName, Argument[] args) throws EvaluationException {
@@ -107,53 +109,53 @@ Expression.DEFAULT_CONFIG.resolver = new Resolver() {
 new Expression("var2").evaluate() == 10
 ```
 
-Variablen können für einen späteren Zugriff gespeichert werden.
-Dazu kann der interne Kontainer mit *Config#useVariables* an geschaltet werden oder
-ein externer Resolver benutzt werden.
+Variables can be stored for later access.
+The internal container can be switched on with *Config#useVariables* or
+An external resolver can be used.
 
-### Beispiel:
+### Example:
 ```Java
 new Expression("var := 5").evaluate() == 5;
 new Expression("var").evaluate() == 5
 ```
 
-Die Gültigkeit der Variablen hängt direkt mit dem Config-Objekt zusammen.
-Nur Expressions mit gleichem Config-Objekt sehen die gleichen Variablen.
+The validity of the variables is directly related to the Config object.
+Only expressions with the same Config object see the same variables.
 
-### Beispiel:
+### Example:
 ```Java
-Config config = new Config();
-config.assign("myInt", new Integer(1024));
-new Expression("myInt").resolve(); // --> Fehler!
+Config config = new Config ();
+Config.assign("myInt", new Integer(1024));
+new Expression("myInt").resolve(); // -> Error!
 new Expression("myInt", config).resolve();
 ```
 
-## Eingene Konstanten und Funktionen
-Es können auch eigene Konstanten und Funktionen definiert werden.
+## Own constants and functions
+You can also define your own constants and functions.
 
-Siehe hierfür: [Funktionen und Konstanten](./FunctionsAndConstants.md)
+See: [Functions and constants](./FunctionsAndConstants.md)
 
-## Arrays und Listen
-Im Zusammenhang mit Variablenzugriffen kann auf Elemente von **Arrays und Listen** zugegriffen werden.
-Die Syntax für Mehrdimensionale Arrays entspricht dabei der Form in Java.
+## arrays and lists
+In the context of variable access, you can access elements of **arrays and lists**.
+The syntax for multi-dimensional arrays is the same as in Java.
 
-### Beispiel:
+### Example:
 ```Java
-// Sei array1D ein 1-Dimensionales Array oder eine Liste vom Typ java.util.List:
-new Expression("array1D[1]").evaluate();
-// Sei array2D ein 2-Dimensionales Array oder eine verschachtelte Liste vom Typ java.util.List:
-new Expression("array2D[1][2]").evaluate();
-// Das Definieren und Zuweisen einzelner Array- und Listen-Elemente ist ebenfalls möglich.
-new Expression("array[2] := [1, 2, [3, 4]]").evaluate();
+// Let array1D be a 1-dimensional array or a list of type java.util.List:
+new Expression("array1D[1]"). Evaluate ();
+// Let array2D be a 2-dimensional array or a nested list of type java.util.List:
+new Expression("array2D[1][2]") evaluate ();
+// Defining and assigning individual array and list elements is also possible.
+new Expression("array[2]: = [1, 2, [3, 4]]").
 ```
 
-## Felder und Methoden
-Im Config-Objekt kann ein Invoker gesetzt werden um auf Objekt-Eigenschaften zuzugreifen oder Methoden aufzurufen.
-Eine Standard-Klasse *DefaultInvoker* ist dafür bereits vorhanden.
+## Fields and methods
+In the Config object, an invoker can be set to access object properties or to call methods.
+A default class * DefaultInvoker * already exists for this.
 
-### Beispiel:
+### Example:
 ```Java
-new Expression("[1, 2, 3].size()", config).resolve() == 3
+New Expression( "[1, 2, 3].size()", config).resolve () == 3
 ```
 
-Für mehr Beispiele siehe die Unit Testklasse: [EvaluationTest](src/tws/test/exp/EvaluationTest.java)
+For more examples, see the unit test class: [EvaluationTest] (src/tws/test/exp/EvaluationTest.java)

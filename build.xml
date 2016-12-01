@@ -17,7 +17,7 @@
 		
 		<copy todir="${build.dir}">
 			<fileset file="LICENSE" />
-			<fileset file="README.md" />
+			<!--fileset file="README.md" /-->
 		</copy>
 	</target>
 	

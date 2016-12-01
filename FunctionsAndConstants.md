@@ -1,10 +1,10 @@
-# Konstanten, Variablen und Funktionen
+# Constants, variables, and functions
 
-## Eigenen Resolver erstellen
-Die Anzahl der Konstanten und Funktionen kann mit einem eigenen Resolver beliebig erweitert werden.
-Hierfür muss eine Klasse erstellt werden die das Resolver-Interface implementiert.
+## Create your own Resolver
+The number of constants and functions can be extended arbitrarily with a separate Resolver.
+For this purpose, a class must be created that implements the Resolver interface.
 
-### Beispiel:
+### Example:
 ```Java
 class MyResolver implements Resolver {
 	public Object resolve(String name, Argument[] args) throws EvaluationException {
@@ -32,11 +32,11 @@ class MyResolver implements Resolver {
 }
 ```
 
-Zu Beachten ist, dass bei Konstanten das zweite Argument '*args*' immer null ist.
-Bei einer Funktion ohne Argumente wird dagegen ein leers Array übergeben.
+Note that for constants the second argument '*args*' is always null.
+In the case of a function without arguments, an empty array is passed.
 
-Im Anschluss muss der neue Resolver noch einem Config-Objekt übergeben werden.
-In allen Expressions mit diesem Config-Objekt kann jetzt die selbst definierte Funktion benutzt werden.
+The new resolver must still be passed to a Config object.
+The self-defined function can now be used in all expressions with this Config object.
 
 ```Java
 Config config = new Config();
@@ -46,27 +46,27 @@ config.resolver = new MyResolver();
 new Expression("fac(6)", config).evaluate();
 ```
 
-Zu Beachten ist, dass immer zuerst der interne Resolver aufgerufen wird.
-Somit werden alle vordefinierten Funktionen nicht mehr weiter geleitet.
-Will mann das Verhalten ändern - *z.B. um eigene Mathematische Funktionen zu implementieren* - kann man im Config-Objekt die entsprechenden Eigenschaften auf false setzen.
+Please note that always the internal resolver is called first.
+Thus all predefined functions are no longer forwarded.
+Will mann change the behavior - *z.B. To implement your own mathematical functions* - you can set the corresponding properties to false in the Config object.
 
 ```Java
 config.usePredefinedContants = false;
 config.usePredefinedFunctions = false;
 ```
 
-Dadurch werden keine vordefinierten Konstanten oder Funktionen mehr intenr aufgelöst und alle Aufrufe an den eigenen Resolver weitergeletet.FunctionsAndConstants.txt
+This does not resolve any predefined constants or functions intenr, and redirect all calls to your own resolver.
 
-##Variablen selbst verwalten
+## Manage variables yourself
 
-Ein eigener Resolver kann auch benutzt werden um Variablen zu definieren und aufzulösen.
-Hierfür muss im Config-Objekt die Eigenschaft useVariables auf false gesetzt bleiben *(default)*.
+A separate resolver can also be used to define and resolve variables.
+To do this, the UseVariables property must be set to false in the Config object *(default)*.
 
 ```Java
 config.useVariables = false;
 ```
 
-### Beispiel:
+### Example:
 ```Java
 class MyResolver implements Resolver {
 	public Object resolve(String name, Argument[] args) throws EvaluationException {
@@ -81,5 +81,5 @@ class MyResolver implements Resolver {
 }
 ```
 
-Was sich im Einzelnen hinter **get_variable** und **set_variable** verbirgt, hängt von der Implementierung ab.
-Der interne Resolver arbeitet z.B. mit einer HashMap.
+What is hidden in detail behind **get_variable** and **set_variable** depends on the implementation.
+The internal resolver operates e.g. with a HashMap.
