@@ -35,6 +35,16 @@ String s = arg.toString();
 ```
 *Beim Kompilieren werden Ausdrücke bereits so weit wie möglich gekürzt ohne Variablen aufzulösen oder Funktionen aufzurufen.*
 
+## Debuging
+Durch die detailierten Fehlerinformationen lassen sich Expressions leicht debuggen.
+Es wird so weit vorhanden, immer der Ausdruck und die Position des Fehlers angezeigt.
+### Beispiel "(1 + (2)"
+```
+tws.expression.EvaluationException: Missing token ')'
+(1 + (2)
+        ^
+```
+
 ## Operatoren
 die benutzt werden können sortiert nach der Priorität:
  * .  Funktion oder Eigenschaft eines Objekts (Funktioniert nur mit einem Invoker)
@@ -158,4 +168,4 @@ Eine Standard-Klasse *DefaultInvoker* ist dafür bereits vorhanden.
 new Expression("[1, 2, 3].size()", config).resolve() == 3
 ```
 
-Für mehr Beispiele siehe die Unit Testklasse: [EvaluationTest](src/tws/test/exp/EvaluationTest.java)
+Für mehr Beispiele siehe die Unit Testklasse: [EvaluationTest](test/src/tws/test/EvaluationTest.java)
