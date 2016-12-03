@@ -1,4 +1,4 @@
-package tws.test.exp;
+package tws.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -56,7 +56,7 @@ public class EvaluationTest
 				if ("list".equals(refName)) return list;
 				if ("carray".equals(refName)) return carray;
 				
-				throw new EvaluationException("");
+				throw new EvaluationException("Resolver error! Can not resolve '" + refName + "'.");
 			}
 
 			@Override
@@ -524,6 +524,13 @@ public class EvaluationTest
 		
 		try
 		{
+			result = new Expression("array [0]", config).compile();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		try
+		{
 			result = new Expression("array[1, 0] > 3", config).compile();
 			fail("Fail: " + result);
 		}
@@ -661,6 +668,7 @@ public class EvaluationTest
 		result = new Expression("pantsu.SHIRO_PANTSU := pantsu", config).resolve().asObject();
 		assertEquals(config.getVariables().get("pantsu"), result);
 	}
+
 	
 	// Klasse für die Invoke-Testreihe
 	public static class Pantsu
@@ -683,5 +691,7 @@ public class EvaluationTest
 	{
 		System.out.println();
 		System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
+		if (e.getCause() != null)
+			System.out.println(e.getCause());
 	}
 }

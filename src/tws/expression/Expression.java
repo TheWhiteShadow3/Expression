@@ -78,9 +78,20 @@ public class Expression
 	 */
 	public static final Config DEFAULT_CONFIG = new Config();
 	
+	private static ThreadLocal<ExpressionParser> parserPool = new ThreadLocal<ExpressionParser>()
+	{
+		@Override
+		protected ExpressionParser initialValue()
+		{
+			return new ExpressionParser();
+		}
+	};
+	
 	private Config config;
 	private String sourceString;
-	private ExpressionParser parser;
+	
+	
+//	private ExpressionParser parser;
 	
 	/**
 	 * Erstellt einen neuen Ausdruck mit der angegebenen Konfiguration.
@@ -94,7 +105,6 @@ public class Expression
 		
 		this.sourceString = sourceString;
 		this.config = config;
-		this.parser = new ExpressionParser(this);
 	}
 	
 	/**
@@ -126,7 +136,9 @@ public class Expression
 	 */
 	public Operation compile() throws EvaluationException
 	{
-		return parser.parse(sourceString);
+		ExpressionParser parser = parserPool.get();
+		
+		return parser.parse(this);
 	}
 	
 	/**

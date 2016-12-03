@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Stellt ein Objekt da.
+ * @author TheWhiteShadow
+ */
 public class ObjectArgument extends Node implements Argument
 {
 	private Object obj;

@@ -209,7 +209,8 @@ public final class Config
 			return !arg.isNull();
 		}
 		
-		throw new EvaluationException("Can not cast " + arg.getType().getName() + " to boolean."); 
+		String typeName = (arg.getType() == void.class) ? "null" : arg.getType().getName();
+		throw new EvaluationException("Can not cast " + typeName + " to boolean."); 
 	}
 	
 	/**

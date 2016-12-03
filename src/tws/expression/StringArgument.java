@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Stellt einen String da.
+ * @author TheWhiteShadow
+ */
 public class StringArgument extends Node implements Argument
 {
 	private String value;
@@ -28,33 +32,44 @@ public class StringArgument extends Node implements Argument
 		this.value = String.valueOf(c);
 	}
 
+	@Override
 	public Class<?> getType() { return String.class; }
+	@Override
 	public boolean isNumber() { return false; }
+	@Override
 	public boolean isString() { return true; }
+	@Override
 	public boolean isNull() { return false; }
+	@Override
 	public boolean isBoolean() { return false; }
+	@Override
 	public boolean isObject() { return false; }
 	
+	@Override
 	public boolean asBoolean()
 	{
 		return getExpression().getConfig().isTrue(this);
 	}
 
+	@Override
 	public String asString()
 	{
 		return value;
 	}
 
+	@Override
 	public double asDouble()
 	{
 		return Double.parseDouble(value);
 	}
 
+	@Override
 	public long asLong()
 	{
 		return Long.parseLong(value);
 	}
 
+	@Override
 	public String asObject()
 	{
 		return asString();
@@ -72,6 +87,7 @@ public class StringArgument extends Node implements Argument
 		return this;
 	}
 	
+	@Override
 	public List<Character> asList()
 	{
 		List<Character> list = new ArrayList<Character>(value.length());

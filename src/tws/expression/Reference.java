@@ -2,7 +2,10 @@ package tws.expression;
 
 import java.util.Arrays;
 
-
+/**
+ * Stellt eine Referenz auf ein Objekt da.
+ * @author TheWhiteShadow
+ */
 public class Reference extends Node implements Operation
 {
 	private final String name;

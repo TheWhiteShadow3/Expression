@@ -3,6 +3,11 @@ package tws.expression;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Stellt eine Liste da.
+ * @author TheWhiteShadow
+ */
 public class ListArgument extends Node implements Argument
 {
 	private Argument[] arguments;

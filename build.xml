@@ -4,34 +4,73 @@
 
 <project name="Expression" basedir="." default="main">
 	
-	<property name="src.dir" value="src"/>
-	<property name="build.dir" value="build"/>
+	<property name="version" value="1.1"/>
+	
+	<property name="exp.src.dir" value="src"/>
+	<property name="exp.build.dir" value="build"/>
+	<property name="test.src.dir" value="test/src"/>
+	<property name="test.build.dir" value="test/build"/>
+	
 	<property name="deploy.dir" value="deploy"/>
+	<property name="test.src.dir" value="src/tws/test/exp"/>
+	
+	<path id="classpath.test">
+		<pathelement location="lib/junit-4.12.jar"/>
+		<pathelement location="lib/hamcrest-core-1.3.jar"/>
+		<pathelement location="${exp.build.dir}"/>
+	</path>
 	
 	<target name="setup_files">
-		<delete dir="${build.dir}" />
+		<delete dir="${exp.build.dir}" />
 		<delete dir="${deploy.dir}" />
 		
-		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${exp.build.dir}"/>
 		<mkdir dir="${deploy.dir}"/>
+	</target>
+
+	<target name="compile" depends="setup_files">
+		<javac srcdir="${exp.src.dir}" destdir="${exp.build.dir}" includeantruntime="true" />
 		
-		<copy todir="${build.dir}">
+		<copy todir="${exp.build.dir}">
 			<fileset file="LICENSE" />
-			<!--fileset file="README.md" /-->
 		</copy>
 	</target>
-	
-	<target name="build" depends="setup_files">
-		<javac srcdir="${src.dir}" destdir="${build.dir}" excludes="tws/test/exp/**" includeantruntime="true" />
 
-		<jar destfile="${deploy.dir}\expression.jar" basedir="${build.dir}">
+	<target name="test" depends="compile">
+		<javac srcdir="${test.src.dir}" destdir="${test.build.dir}" includeantruntime="true">
+			<classpath refid="classpath.test"/>
+		</javac>
+		
+		<junit printsummary="on" haltonfailure="yes">
+			<classpath>
+				<path refid="classpath.test"/>
+				<pathelement location="${test.build.dir}"/>
+			</classpath>
+			<batchtest>
+				<fileset dir="${test.src.dir}" includes="EvaluationTest.java" />
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="source">
+		<jar destfile="${deploy.dir}\expression_src.jar" basedir="${exp.src.dir}">
 			<manifest>
 				<attribute name="Created-By" value="TheWhiteShadow" />
+				<attribute name="Version" value="${version}" />
 			</manifest>
 		</jar>
 	</target>
 	
-	<target name="main" depends="build">
+	<target name="build" depends="compile">
+		<jar destfile="${deploy.dir}\expression.jar" basedir="${exp.build.dir}">
+			<manifest>
+				<attribute name="Created-By" value="TheWhiteShadow" />
+				<attribute name="Version" value="${version}" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="main" depends="build, test, source">
 		<description>Expression Deployment</description>
 	</target>
 </project>

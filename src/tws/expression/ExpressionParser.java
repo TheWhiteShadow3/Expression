@@ -10,18 +10,16 @@ public class ExpressionParser
 	private int lenght;
 	int start;
 	private int pos;
-	Expression exp;
+	private Expression exp;
 	private List<Node> args;
 	
-	public ExpressionParser(Expression exp)
+	public ExpressionParser() {}
+	
+	public Operation parse(Expression exp)
 	{
 		this.exp = exp;
-	}
-	
-	public Operation parse(String str)
-	{
-		this.string = str;
-		lenght = string.length();
+		this.string = exp.getSourceString();
+		this.lenght = string.length();
 		this.start = 0;
 		this.pos = 0;
 		this.args = new ArrayList<Node>(12);
@@ -186,7 +184,7 @@ public class ExpressionParser
 				}
 				else
 				{	// Array-Index
-					args.add(new OperationNode(exp, pos, Operator.INDEX));
+					args.add(new OperationNode(exp, braceStart, Operator.INDEX));
 					int argStart = args.size();
 					addListNodes(']');
 					if (args.size() != argStart+1)
@@ -314,10 +312,10 @@ public class ExpressionParser
 		{
 			Node left = args.get(index-1);
 			Node right = args.get(index+1);
-			if (op.getOperator() == Operator.DOT)
+			if (op.getOperator() == Operator.DOT || op.getOperator() == Operator.INDEX)
 			{
 				if (isWhiteSpace(string.charAt(op.getSourcePos()-1)))
-					throw new EvaluationException(op, "DOT-Operator must not seperate from operand.");
+					throw new EvaluationException(op, op.getOperator().name() + "-Operator must not seperate from operand.");
 			}
 			
 			if (left instanceof Operation || right instanceof Operation)

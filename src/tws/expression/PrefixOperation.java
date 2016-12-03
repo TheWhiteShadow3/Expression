@@ -1,6 +1,10 @@
 package tws.expression;
 
 
+/**
+ * Stellt eine Operation mit einem Operanten da.
+ * @author TheWhiteShadow
+ */
 public class PrefixOperation extends Node implements Operation
 {
 	private OperationNode symbol;
@@ -18,6 +22,7 @@ public class PrefixOperation extends Node implements Operation
 		return symbol;
 	}
 	
+	@Override
 	public Argument resolve() throws EvaluationException
 	{
 		return (Argument) Symbols.resolveOneArg(symbol, arg);

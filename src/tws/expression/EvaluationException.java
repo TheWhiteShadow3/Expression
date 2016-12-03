@@ -3,6 +3,10 @@ package tws.expression;
 import java.util.Arrays;
 
 
+/**
+ * Wird geworfen, wenn beim Kompilieren oder Auflösen eines Ausdrucks ein Fehler entsteht.
+ * @author TheWhiteShadow
+ */
 public class EvaluationException extends RuntimeException
 {
 	private static final long serialVersionUID = 4964830263576341968L;

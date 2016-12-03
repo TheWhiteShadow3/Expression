@@ -1,6 +1,10 @@
 package tws.expression;
 
 
+/**
+ * Stellt eine Operation mit zwei Operanten da.
+ * @author TheWhiteShadow
+ */
 public class InfixOperation extends Node implements Operation
 {
 	private OperationNode symbol;

@@ -4,6 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 
+/**
+ * Stellt einen Null-Wert da.
+ * @author TheWhiteShadow
+ */
 public class NullArgument extends Node implements Argument
 {
 	NullArgument(Expression exp, int sourcePos)
