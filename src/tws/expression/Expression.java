@@ -90,9 +90,6 @@ public class Expression
 	private Config config;
 	private String sourceString;
 	
-	
-//	private ExpressionParser parser;
-	
 	/**
 	 * Erstellt einen neuen Ausdruck mit der angegebenen Konfiguration.
 	 * @param sourceString String, der den Ausdruck enthält.

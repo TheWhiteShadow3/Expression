@@ -11,6 +11,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -667,6 +672,39 @@ public class EvaluationTest
 		// Auch statische Felder müssen von einem Objekt aus aufgerufen werden!
 		result = new Expression("pantsu.SHIRO_PANTSU := pantsu", config).resolve().asObject();
 		assertEquals(config.getVariables().get("pantsu"), result);
+	}
+	
+	@Test
+	public void testThreading() throws InterruptedException, ExecutionException
+	{
+		System.out.println("Threading");
+		final Config config = new Config();
+		config.debug = true;
+		config.resolver = Expression.DEFAULT_CONFIG.resolver;
+		config.invoker = new DefaultInvoker();
+		
+		// Ein paar Testausdrücke, die alle 5 zurück geben. (Zur leichteren Auswertung)
+		final String[] expressions = new String[] {"3*5 - 10", "'125'[2]", "'shiro'.length()", "v := 5", "array[1][1]"};
+		List<Future<Argument>> resultCache = new ArrayList<Future<Argument>>(25);
+		
+		ExecutorService service = Executors.newFixedThreadPool(4);
+		for(int i = 0; i < 25; i++)
+		{
+			final int index = i % 5;
+			resultCache.add(service.submit(new Callable<Argument>()
+			{
+				@Override
+				public Argument call() throws Exception
+				{
+					return new Expression(expressions[index], config).resolve();
+				}
+			}));
+		}
+		
+		for(int i = 0; i < 24; i++)
+		{
+			assertEquals(5L, resultCache.get(i).get().asLong());
+		}
 	}
 
 	

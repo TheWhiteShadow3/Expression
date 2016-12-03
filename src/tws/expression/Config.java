@@ -289,7 +289,9 @@ public final class Config
 		
 		if (obj instanceof String)
 			return new StringArgument(parent, (String) obj);
-
+		if (obj instanceof Character)
+			return new StringArgument(parent, (Character) obj);
+		
 		if (recursive)
 		{
 			if (obj.getClass().isArray() || obj instanceof List)

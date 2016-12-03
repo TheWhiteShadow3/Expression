@@ -403,7 +403,7 @@ class Symbols
 			{
 				String str = (String) collection;
 				int index = getIndex(right, str.length());
-				return new ObjectArgument(left, str.charAt(index));
+				return new StringArgument(left, str.charAt(index));
 			}
 			else
 				throw new EvaluationException(left, "Invalid list type " + collection.getClass().getName() + ".");
