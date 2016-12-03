@@ -8,7 +8,9 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -315,6 +317,17 @@ public class EvaluationTest
 		// Wenn ein Wrapper benutzt wird, existiert keine echte Operation mehr im Ausdruck, da dieser vollständig aufgelöst wurde.
 		assertTrue(op instanceof WrapperOperation);
 		
+		Config config = new Config();
+		config.useVariables = true;
+		int[] arr = new int[] {1, 2};
+		config.assign("arr", arr);
+		
+		op = new Expression("arr", config).compile();
+		arr[1] = 4;
+		Argument a = op.resolve();
+		arr[1] = 6;
+		assertEquals(4L, a.asList().get(1)); 
+		
 		System.out.println();
 	}
 	
@@ -388,6 +401,9 @@ public class EvaluationTest
 		double d;
 		d = new Expression("min(2, 7, 5, 1)").resolve().asDouble();
 		assertEquals(1, d, 0.);
+		
+		d = new Expression("max([1, 2, 3])").resolve().asDouble();
+		assertEquals(3, d, 0.);
 		
 		d = new Expression("sin(PI)").resolve().asDouble();
 		assertEquals(0, d, 2E-16);
@@ -484,8 +500,8 @@ public class EvaluationTest
 		Object result;
 		List<?> list;
 		
-		boolean b = new Expression("array[1][0] > 3", config).resolve().asBoolean();
-		assertTrue(b);
+//		boolean b = new Expression("array[1][0] > 3", config).resolve().asBoolean();
+//		assertTrue(b);
 		
 		// Seit Version 0.2 ist es erlaubt, ein Array zu definieren.
 		list = new Expression("[1, 2]", config).resolve().asList();
@@ -494,8 +510,17 @@ public class EvaluationTest
 		result = new Expression("'test'[2]", config).resolve().asString();
 		assertEquals("s", result);
 		
-		long l = new Expression("[1, 2+4, 3][1]", config).resolve().asLong();
-		assertEquals(6, l);
+		list = new Expression("[1, 2+4, 3]", config).resolve().asList();
+		assertEquals(6L, list.get(1));
+
+		// Seit 0.4 gehen auf Maps.
+		Map map = new HashMap<String, Object>();
+		map.put("k", "v");
+		config.useVariables = true;
+		config.assign("map", map);
+		
+		result = new Expression("map['k']", config).evaluate();
+		assertEquals("v", result);
 		
 		try
 		{
@@ -504,9 +529,10 @@ public class EvaluationTest
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
+		Operation op = new Expression("[0, 1][3]", config).compile();
 		try
 		{
-			result = new Expression("[0, 1][3]", config).compile();
+			op.resolve();
 			fail("Fail: " + result);
 		}
 		catch(EvaluationException e) { handleException(e); }

@@ -1,5 +1,6 @@
 package tws.expression;
 
+import java.lang.reflect.Array;
 import java.text.Collator;
 import java.util.List;
 import java.util.Map;
@@ -271,7 +272,7 @@ public final class Config
 			throw new ClassCastException("Can not cast boolean to number."); 
 	}
 	
-	static Argument wrap(Node parent, Object obj)
+	static Argument wrap(Node parent, Object obj, boolean recursive)
 	{
 		if (obj == null) return new NullArgument(parent);
 		if (obj instanceof Argument) return (Argument) obj;
@@ -287,10 +288,37 @@ public final class Config
 		
 		if (obj instanceof String)
 			return new StringArgument(parent, (String) obj);
-		
-		if (obj instanceof List || obj.getClass().isArray())
-			return new ListArgument(parent, obj);
+
+		if (recursive)
+		{
+			if (obj.getClass().isArray() || obj instanceof List)
+				return new ListArgument(parent, asArgumentList(parent, obj));
+		}
 		
 		return new ObjectArgument(parent, obj);
+	}
+	
+	static Argument[] asArgumentList(Node parent, Object obj)
+	{
+		if (obj == null)
+		{
+			return new Argument[0];
+		}
+		else if (obj.getClass().isArray())
+		{
+			Argument[] result= new Argument[Array.getLength(obj)];
+			for(int i = 0; i < result.length; i++)
+				result[i] = wrap(parent, Array.get(obj, i), false);
+			return result;
+		}
+		else if (obj instanceof List)
+		{
+			List list = (List) obj;
+			Argument[] result= new Argument[list.size()];
+			for(int i = 0; i < result.length; i++)
+				result[i] = wrap(parent, list.get(i), false);
+			return result;
+		}
+		else return new Argument[] {wrap(parent, obj, false)};
 	}
 }

@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 public class Reference extends Node implements Operation
 {
-	private String name;
+	private final String name;
 	private Node[] argNodes;
 	
 	Reference(Expression exp, int sourcePos, String name)
@@ -14,12 +14,19 @@ public class Reference extends Node implements Operation
 		this.name = name;
 	}
 	
+	Reference(Expression exp, int sourcePos, Node[] argNodes)
+	{
+		super(exp, sourcePos);
+		this.name = null;
+		this.argNodes = argNodes;
+	}
+	
 	Reference(Node initiator, String name)
 	{
 		super(initiator);
 		this.name = name;
 	}
-	
+
 	void setArguments(Node[] argNodes)
 	{
 		this.argNodes = argNodes;
@@ -49,21 +56,36 @@ public class Reference extends Node implements Operation
 	@Override
 	public Argument resolve() throws EvaluationException
 	{
-		Resolver resolver = getExpression().getConfig().internalResolver;
-		try
+		return resolve(true); 
+	}
+	
+	private Argument resolve(boolean recursive)
+	{
+		if (name == null)
 		{
-			Object obj = resolver.resolve(name, resolveArguments());
-			return Config.wrap(this, obj);
+			return new ListArgument(this, resolveArguments());
 		}
-		catch(Exception e)
+		else
 		{
-			throw new EvaluationException(this, "Can not resolve " + name, e);
+			Resolver resolver = getExpression().getConfig().internalResolver;
+			try
+			{
+				Object obj = resolver.resolve(name, resolveArguments());
+				
+				return Config.wrap(this, obj, recursive);
+			}
+			catch(Exception e)
+			{
+				throw new EvaluationException(this, "Can not resolve " + name, e);
+			}
 		}
 	}
 	
 	@Override
 	public String toString()
 	{
+		if (name == null) return Arrays.toString(argNodes);
+		
 		if (argNodes == null)
 			return '$' + name;
 		else
@@ -73,6 +95,6 @@ public class Reference extends Node implements Operation
 	@Override
 	public Argument getArgument()
 	{
-		return resolve();
+		return resolve(false);
 	}
 }

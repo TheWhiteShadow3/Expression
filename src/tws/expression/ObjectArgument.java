@@ -1,6 +1,8 @@
 package tws.expression;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ObjectArgument extends Node implements Argument
@@ -78,6 +80,25 @@ public class ObjectArgument extends Node implements Argument
 	@Override
 	public List<?> asList()
 	{
+		if (obj == null)
+		{
+			return Collections.EMPTY_LIST;
+		}
+		else if (obj.getClass().isArray())
+		{
+			if (obj.getClass().getComponentType().isPrimitive())
+			{	// Wrapper für primitive Typen, da diese nicht in ein Objekt-Array konvertiert werden können.
+				Object[] wrapper = new Object[Array.getLength(obj)];
+				for(int i = 0; i < wrapper.length; i++)
+					wrapper[i] = Array.get(obj, i);
+				return Arrays.asList(wrapper);
+			}
+			return Arrays.asList((Object[]) obj);
+		}
+		else if (obj instanceof List)
+		{
+			return (List<Object>) obj;
+		}
 		return Arrays.asList(obj);
 	}
 }

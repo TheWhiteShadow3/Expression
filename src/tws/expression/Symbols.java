@@ -1,7 +1,9 @@
 package tws.expression;
 
+import java.lang.reflect.Array;
 import java.text.Collator;
 import java.util.List;
+import java.util.Map;
 
 
 class Symbols
@@ -241,7 +243,7 @@ class Symbols
 		return compareNumeric(node, left, right) == 0;
 	}
 	
-	private static int compareNumeric(Node node, Argument left, Argument right)
+	static int compareNumeric(Node node, Argument left, Argument right)
 	{
 		if (left.getType() == double.class || right.getType() == double.class)
 		{
@@ -322,16 +324,47 @@ class Symbols
 			InfixOperation op = (InfixOperation) left;
 			Node[] nodes = left.getChildren();
 			Argument obj = nodes[0].getArgument();
-			
+
 			if (op.getSymbol().getOperator() == Operator.INDEX)
 			{
-				if (!(obj instanceof ListArgument))
-					throw new EvaluationException(left, "Invalid reference type " + obj.getClass().getName());
-				
-				ListArgument list = (ListArgument) obj;
-				int index = (int) nodes[1].getArgument().asLong();
+				Object collection = ((ObjectArgument) obj).asObject();
+
+				if (collection.getClass().isArray())
+				{
+					int index = getIndex(nodes[1], Array.getLength(collection));
+					Class<?> cls = collection.getClass().getComponentType();
 					
-				list.set(index, arg);
+					Object value;
+					if (cls == int.class)
+						value = (int) arg.asLong();
+					else if (cls == float.class)
+						value = (float) arg.asDouble();
+					else if (cls == char.class && arg.asString().length() == 1)
+					{
+						String str = arg.asString();
+						if (str.length() != 1)
+							throw new EvaluationException((Node) arg, "Can not cast string with length other then one into char.");
+						value = str.charAt(0);
+					}
+					else
+						value = arg.asObject();
+					
+					Array.set(collection, index, value);
+				}
+				else if (collection instanceof List)
+				{
+					List list = (List) collection;
+					int index = getIndex(nodes[1], list.size());
+					list.set(index, arg.asObject());
+				}
+				else if (collection instanceof Map)
+				{
+					Object key = nodes[1].getArgument().asObject();
+					((Map) collection).put(key, arg.asObject());
+				}
+				else
+					throw new EvaluationException(left, "Invalid list type " + collection.getClass().getName() + ".");
+				
 				return (Node) arg;
 			}
 			else if (op.getSymbol().getOperator() == Operator.DOT)
@@ -346,31 +379,51 @@ class Symbols
 
 	private static Node index(Node left, Node right)
 	{
-		int index = (int) right.getArgument().asLong();
 		try
 		{
-			if (left instanceof Reference)
+			Object collection = left.getArgument().asObject();
+			Object result;
+			if (collection.getClass().isArray())
 			{
-				Argument arg = ((Reference) left).resolve();
-				if (!(arg instanceof ListArgument))
-					throw new EvaluationException(right, "Invalid list type " + arg.getType().getName() + ".");
-				
-				return (Node) Config.wrap(left, ((ListArgument) arg).get(index));
+				int index = getIndex(right, Array.getLength(collection));
+				result = Array.get(collection, index);
 			}
-			else if (left instanceof ListArgument)
+			else if (collection instanceof List)
 			{
-				return ((ListArgument) left).getChildren()[index];
+				List list = (List) collection;
+				int index = getIndex(right, list.size());
+				result = list.get(index);
+			}
+			else if (collection instanceof Map)
+			{
+				Object key = right.getArgument().asObject();
+				result = ((Map) collection).get(key);
+			}
+			else if (collection instanceof String)
+			{
+				String str = (String) collection;
+				int index = getIndex(right, str.length());
+				return new ObjectArgument(left, str.charAt(index));
 			}
 			else
-			{
-				List<?> list = left.getArgument().asList();
-				return (Node) Config.wrap(left, list.get(index));
-			}
+				throw new EvaluationException(left, "Invalid list type " + collection.getClass().getName() + ".");
+			
+			return (Node) Config.wrap(left, result, false);
+			
+//			throw new EvaluationException(left, "Invalid Type for Operation: INDEX");
 		}
 		catch(IndexOutOfBoundsException e)
 		{
 			throw new EvaluationException(right, "Invalid Index.", e);
 		}
+	}
+	
+	private static int getIndex(Node indexNode, int arraySize)
+	{
+		int index = (int) indexNode.getArgument().asLong();
+		if (index < 0)
+			index = arraySize - index;
+		return index;
 	}
 	
 	private static Node dot(Node recieverNode, Node call)
@@ -386,7 +439,7 @@ class Symbols
 		{
 			Config config = recieverNode.getExpression().getConfig();
 			Object result = config.invoke(reciever, name, args);
-			return (Node) Config.wrap(recieverNode, result);
+			return (Node) Config.wrap(recieverNode, result, false);
 		}
 		catch (NoSuchFieldException e)
 		{

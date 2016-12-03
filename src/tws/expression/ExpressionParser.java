@@ -182,7 +182,7 @@ public class ExpressionParser
 						argNodes[i - argStart] = args.get(i);
 						args.remove(i);
 					}
-					args.add(new ListArgument(exp, braceStart, argNodes));
+					args.add(new Reference(exp, braceStart, argNodes));
 				}
 				else
 				{	// Array-Index

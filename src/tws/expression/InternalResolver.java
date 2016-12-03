@@ -1,7 +1,10 @@
 package tws.expression;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -81,15 +84,40 @@ class InternalResolver implements Resolver
 		
 		return r.resolve(name, args);
 	}
-
+	
+	private List<Argument> toList(Argument[] args)
+	{
+		if (args.length == 1)
+		{
+			// Vermeide unnötiges ein-/auspacken bei ListArgument
+			if (args[0] instanceof ListArgument)
+			{
+				args = ((ListArgument) args[0]).getValues();
+			}
+			else if (args[0] instanceof ObjectArgument)
+			{
+				ObjectArgument arg = (ObjectArgument) args[0];
+				List list = arg.asList();
+				List<Argument> arguments = new ArrayList<Argument>(list.size());
+				for(int i = 0; i < list.size(); i++)
+				{
+					arguments.add(Config.wrap(arg, list.get(i), true));
+				}
+				return arguments;
+			}
+		}
+		return Arrays.asList(args);
+	}
+	
 	private Argument min(Argument[] args)
 	{
 		if (args.length == 0) throw new EvaluationException("Invalid number of arguments.");
 		
-		Argument min = args[0];
-		for(int i = 1; i < args.length; i++)
+		List<Argument> list = toList(args);
+		Argument min = list.get(0);
+		for(int i = 1; i < list.size(); i++)
 		{
-			if (min.asDouble() > args[i].asDouble()) min = args[i];
+			if (Symbols.compareNumeric((Node) min, min, list.get(i)) == 1) min = list.get(i);
 		}
 		return min;
 	}
@@ -97,11 +125,12 @@ class InternalResolver implements Resolver
 	private Argument max(Argument[] args)
 	{
 		if (args.length == 0) throw new EvaluationException("Invalid number of arguments.");
-		
-		Argument max = args[0];
-		for(int i = 1; i < args.length; i++)
+
+		List<Argument> list = toList(args);
+		Argument max = list.get(0);
+		for(int i = 1; i < list.size(); i++)
 		{
-			if (max.asDouble() < args[i].asDouble()) max = args[i];
+			if (Symbols.compareNumeric((Node) max, max, list.get(i)) == -1) max = list.get(i);
 		}
 		return max;
 	}

@@ -1,39 +1,27 @@
 package tws.expression;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ListArgument<T> extends Node implements Argument
+public class ListArgument extends Node implements Argument
 {
-	private Object seq;
+	private Argument[] arguments;
 	
-	ListArgument(Expression exp, int sourcePos, Node[] nodes)
-	{
-		super(exp, sourcePos);
-		this.seq = nodes;
-	}
-	
-	ListArgument(Node parent, Node[] nodes)
+	ListArgument(Node parent, Argument[] arguments)
 	{
 		super(parent);
-		this.seq = nodes;
+		this.arguments = arguments;
 	}
 	
-	ListArgument(Node parent, Object seq)
-	{
-		super(parent);
-		this.seq = seq;
-	}
-	
-	@Override
-	public Node[] getChildren()
-	{
-		if (seq instanceof Node[])
-			return (Node[]) seq;
-		else
-			return super.getChildren();
-	}
+//	ListArgument(Node parent, List<?> list)
+//	{
+//		super(parent);
+//		this.arguments = new ArrayList<Argument>(list.size());
+//		for(int i = 0; i < list.size(); i++)
+//		{
+//			arguments.add( Config.wrap(this, list.get(i), false) );
+//		}
+//	}
 	
 	@Override
 	public Argument getArgument()
@@ -79,82 +67,30 @@ public class ListArgument<T> extends Node implements Argument
 	}
 
 	@Override
-	public List<T> asObject()
+	public List<?> asObject()
 	{
 		return asList();
 	}
 
 	@Override
-	public List<T> asList()
+	public List<Object> asList()
 	{
-		if (seq instanceof List)
-			return (List<T>) seq;
-		else
+		List<Object> list = new ArrayList<Object>(arguments.length);
+		for(int i = 0, n = arguments.length; i < n; i++)
 		{
-			Object[] wrapper = new Object[size()];
-			for(int i = 0; i < wrapper.length; i++)
-			{
-				Object obj = Array.get(seq, i);
-				if (obj instanceof Node)
-					obj = ((Node) obj).getArgument().asObject();
-				wrapper[i] = obj;
-			}
-			return (List<T>) Arrays.asList(wrapper);
+			list.add(arguments[i].asObject());
 		}
+		return list;
 	}
 	
 	public int size()
 	{
-		if (seq instanceof List)
-			return ((List) seq).size();
-		else
-			return Array.getLength(seq);
+		return arguments.length;
 	}
 	
-	public T get(int index)
+	public Argument[] getValues()
 	{
-		if (seq instanceof List)
-			return (T) ((List) seq).get(index);
-		else
-			return (T) Array.get(seq, index);
-	}
-	
-	public void set(int index, T value)
-	{
-		if (seq instanceof List)
-			((List) seq).set(index, value);
-		else
-			Array.set(seq, index, value);
-	}
-	
-	public void set(int index, Argument arg)
-	{
-		if (seq instanceof List)
-		{
-			((List) seq).set(index, arg.asObject());
-		}
-		else if (seq.getClass().isArray())
-		{
-			Class<?> cls = seq.getClass().getComponentType();
-			
-			Object value;
-			if (cls == int.class)
-				value = (int) arg.asLong();
-			else if (cls == float.class)
-				value = (float) arg.asDouble();
-			else if (cls == char.class && arg.asString().length() == 1)
-			{
-				String str = arg.asString();
-				if (str.length() != 1)
-					throw new IllegalArgumentException("Can not cast string with length other then one into char.");
-				value = str.charAt(0);
-			}
-			else
-				value = arg.asObject();
-			
-			Array.set(seq, index, value);
-		}
-		else throw new EvaluationException(this, "Invalid reference type " + seq.getClass().getName());
+		return arguments;
 	}
 	
 	@Override
