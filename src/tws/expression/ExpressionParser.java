@@ -30,11 +30,20 @@ public class ExpressionParser
 		{
 			throwException("Trash after Expression.", null);
 		}
+		cleanup();
 		
 		if (node instanceof Operation)
 			return (Operation) node;
 		else
 			return new WrapperOperation((Argument) node);
+	}
+	
+	private void cleanup()
+	{
+		// Objekt-Referenzen aufräumen.
+		this.exp = null;
+		this.string = null;
+		this.args = null;
 	}
 	
 	private Node addNextNode()
