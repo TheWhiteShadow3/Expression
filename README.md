@@ -35,6 +35,16 @@ String s = arg.toString();
 ```
 *When compiling, expressions are already truncated as much as possible without resolving variables or calling functions.*
 
+## Debugging
+The detailed error information makes debugging easy.
+The expression string and the position of the error are displayed as far as possible.
+### Example "(1 + (2)"
+```
+tws.expression.EvaluationException: Missing token ')'
+(1 + (2)
+        ^
+```
+
 ## Operators
 Which can be used sorted by priority:
  * .  function or property of an object (works only with an Invoker)
@@ -157,5 +167,4 @@ A default class * DefaultInvoker * already exists for this.
 ```Java
 New Expression( "[1, 2, 3].size()", config).resolve () == 3
 ```
-
-For more examples, see the unit test class: [EvaluationTest] (src/tws/test/exp/EvaluationTest.java)
+For more examples, see the unit test class: [EvaluationTest] (test/src/tws/test/EvaluationTest.java)
