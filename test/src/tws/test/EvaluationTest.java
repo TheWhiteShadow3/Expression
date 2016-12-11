@@ -417,6 +417,20 @@ public class EvaluationTest
 		String str = (String) new Expression("'atashi no ' + blub()").evaluate();
 		assertEquals("atashi no " + blub, str);
 		
+		Config config = new Config();
+		config.debug = true;
+		config.useVariables = true;
+		
+		int[] array = new int[] {6, 4, 1, 3};
+		config.assign("l", array);
+		
+		List list = new Expression("asc(l)", config).resolve().asList();
+		assertEquals(1L, list.get(0));
+		assertEquals(6L, list.get(3));
+		
+		assertEquals(6, array[0]);
+		assertEquals(3, array[3]);
+		
 		System.out.println();
 	}
 	

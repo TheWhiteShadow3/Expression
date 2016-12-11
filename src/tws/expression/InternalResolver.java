@@ -3,6 +3,7 @@ package tws.expression;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,9 @@ class InternalResolver implements Resolver
 		{
 			if ("min".equals(name)) return min(args);
 			if ("max".equals(name)) return max(args);
-			
+			if ("asc".equals(name)) return sort(args, true);
+			if ("desc".equals(name)) return sort(args, false);
+					
 			if (args.length == 0)
 			{
 				if ("rand".equals(name)) return Math.random();
@@ -84,7 +87,7 @@ class InternalResolver implements Resolver
 		
 		return r.resolve(name, args);
 	}
-	
+
 	private List<Argument> toList(Argument[] args)
 	{
 		if (args.length == 1)
@@ -107,6 +110,26 @@ class InternalResolver implements Resolver
 			}
 		}
 		return Arrays.asList(args);
+	}
+	
+	private ListArgument sort(Argument[] args, boolean asc)
+	{
+		if (args.length == 0) throw new EvaluationException("Invalid number of arguments.");
+		
+		Node parent = null;
+		if (args[0] instanceof Node)
+			parent = ((Node) args[0]).getParent();
+		
+		Argument[] array = toList(args).toArray(args);
+		
+		Comparator<Argument> c;
+		if (asc)
+			c = ArgumentComperator.INSTANCE;
+		else
+			c = Collections.reverseOrder(ArgumentComperator.INSTANCE);
+		
+		Arrays.sort(array, c);
+		return new ListArgument(parent, array);
 	}
 	
 	private Argument min(Argument[] args)
@@ -160,5 +183,20 @@ class InternalResolver implements Resolver
 	public Map<String, Object> getVariables()
 	{
 		return Collections.unmodifiableMap(variables);
+	}
+	
+	private static class ArgumentComperator implements Comparator<Argument>
+	{
+		static final ArgumentComperator INSTANCE = new ArgumentComperator();
+		
+		@Override
+		public int compare(Argument a1, Argument a2)
+		{
+			Node node = null;
+			if (a1 instanceof Node)
+				node = (Node) a1;
+			
+			return Symbols.compareNumeric(node, a1, a2);
+		}
 	}
 }
