@@ -50,7 +50,7 @@ public class ExpressionParser
 	{
 		int offset = args.size();
 		
-		int opCount = 1; // Operationen
+		int opCount = 1; // Zeigt an, dass als nächstes ein Operand gesucht wird.
 //		char cBrace = 0;
 		boolean isString = false;
 		start = pos;
@@ -91,60 +91,6 @@ public class ExpressionParser
 				start = pos;
 				continue;
 			}
-			
-//			if (c == '(' || c == '[')
-//			{
-//				cBrace = (c == '(') ? ')' : ']';
-//				int braceStart = pos;
-//				pos++;
-//				Node node = args.isEmpty() ? null : args.get(args.size()-1);
-//				if (node instanceof Reference || c == '[')
-//				{
-//					int argStart = args.size();
-//					do
-//					{
-//						getNextNode();
-//						if (lenght <= pos) throwException("Missing token '" + cBrace + "'", null);
-//						c = string.charAt(pos++);
-//					}
-//					while(c == ',');
-//					if (c != cBrace) throwException("Missing token '" + cBrace + "'", null);
-//					
-//					Node[] argNodes = new Node[args.size()- argStart];
-//					for(int i = args.size()-1; i >= argStart; i--)
-//					{
-//						argNodes[i - argStart] = args.get(i);
-//						args.remove(i);
-//					}
-//					if (opCount == 1)
-//					{
-//						opCount = 0;
-//						args.add(new Array(exp, braceStart, argNodes));
-//					}
-//					else if (node != null)
-//					{
-//						if (cBrace == ')')
-//						{
-//							if (!(node instanceof Reference))
-//								throw new EvaluationException(node, "Invalid identifier.");
-//							((Reference) node).setArguments(argNodes);
-//						}
-//						else
-//						{
-//							if (argNodes.length != 1)
-//								throw new EvaluationException(string, braceStart, "Invalid Index.");
-//							
-//							args.set(args.size()-1, new ArrayOperation(node, argNodes[0]));
-//						}
-//					}
-//				}
-//				else
-//				{
-//					getNextNode();
-//					opCount = 0;
-//					if (lenght <= pos || string.charAt(pos++) != ')') throwException("Missing token ')'", null);
-//				}
-//			}
 			
 			if (c == '(')
 			{
@@ -202,11 +148,9 @@ public class ExpressionParser
 			}
 			else if (c == ',' || c == ')' || c == ']')
 			{
-				if (args.size() == 0) throwException("Invalid Expression", null);
-				if (args.get(args.size()-1) instanceof Reference) return null;
+				if (args.size() > 0 && args.get(args.size()-1) instanceof Reference) return null;
 				
 				if (opCount > 0) throwException("Missing operand.", null);
-
 				break;
 			}
 			else if (isIdentifier(c))
@@ -252,7 +196,7 @@ public class ExpressionParser
 				{
 					if (op == Operator.SUB) op = Operator.NEG;
 					else if (op != Operator.NOT)
-						throwException("Illegal operator: " + op, null);
+						throwException("Illegal prefix operator: " + op, null);
 				}
 				
 				args.add(new OperationNode(exp, start, op));
@@ -444,7 +388,14 @@ public class ExpressionParser
 	
 	private void addListNodes(char endKey)
 	{
-		char c;
+		char c = string.charAt(pos);
+		// empty list?
+		if (c == endKey)
+		{
+			pos++;
+			start = pos;
+			return;
+		}
 		do
 		{
 			addNextNode();

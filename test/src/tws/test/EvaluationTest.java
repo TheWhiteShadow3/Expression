@@ -170,7 +170,7 @@ public class EvaluationTest
 		i = (Long) new Expression("((2)-(1))").evaluate();
 		assertTrue(i == 1);
 		
-		i = (Long) new Expression("2 * (1 + 3)").evaluate();
+		i = (Long) new Expression("2 * (1 + 3 )").evaluate();
 		assertTrue(i == 8);
 		
 		try
@@ -190,6 +190,13 @@ public class EvaluationTest
 		try
 		{
 			Operation op = new Expression("()").compile();
+			fail("Fail: " + op.toString());
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		try
+		{
+			Operation op = new Expression("]").compile();
 			fail("Fail: " + op.toString());
 		}
 		catch(EvaluationException e) { handleException(e); }
@@ -519,8 +526,11 @@ public class EvaluationTest
 		Object result;
 		List<?> list;
 		
-//		boolean b = new Expression("array[1][0] > 3", config).resolve().asBoolean();
-//		assertTrue(b);
+		list = new Expression("[]", config).resolve().asList();
+		assertEquals(0, list.size());
+		
+		boolean b = new Expression("array[1][0] > 3", config).resolve().asBoolean();
+		assertTrue(b);
 		
 		// Seit Version 0.2 ist es erlaubt, ein Array zu definieren.
 		list = new Expression("[1, 2]", config).resolve().asList();

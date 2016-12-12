@@ -451,10 +451,13 @@ class Symbols
 			StringBuilder builder = new StringBuilder();
 			builder.append("Method ").append(name);
 			builder.append('(');
-			for (int i = 0; i < args.length; i++)
+			if (args != null)
 			{
-				if (i > 0) builder.append(", ");
-				builder.append(args[i].getType());
+				for (int i = 0; i < args.length; i++)
+				{
+					if (i > 0) builder.append(", ");
+					builder.append(args[i].getType());
+				}
 			}
 			builder.append(')');
 			builder.append(" not found for ").append(reciever.getType().getName());
