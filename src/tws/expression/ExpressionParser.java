@@ -267,8 +267,11 @@ public class ExpressionParser
 			}
 		}
 		if (isString) throwException("Missing String-Terminator.", null);
-//		if (ayb > 0) throwException("Missing tocken ']'.", null);
 		if (exp.getConfig().debug) System.out.print(args);
+		
+		if (args.isEmpty()) return new NullArgument(exp, 0);
+		if (args.get(args.size()-1) instanceof OperationNode)
+			throwException("Invalid expression.", null);
 		
 		return resolveStatement(offset);
 	}
@@ -297,6 +300,7 @@ public class ExpressionParser
 			precompileOperation(index);
 		}
 		if (exp.getConfig().debug) System.out.println(": " + args.get(offset));
+		
 		return args.get(offset);
 	}
 	
@@ -349,6 +353,12 @@ public class ExpressionParser
 	
 	private Operator getNextOperator()
 	{
+		if (string.length() == pos+1)
+		{
+			pos++;
+			throwException("Invalid expression.", null);
+		}
+		
 		char c = string.charAt(pos);
 		switch(c)
 		{
