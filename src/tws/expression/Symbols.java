@@ -28,9 +28,9 @@ class Symbols
 			case GREATER: 		return greater(op, left.getArgument(), right.getArgument());
 			case GREATER_EQUAL: return greaterEqual(op, left.getArgument(), right.getArgument());
 			
-			case AND: 			return and(op, left.getArgument(), right.getArgument());
-			case OR: 			return or(op, left.getArgument(), right.getArgument());
-			case EXOR: 			return exor(op, left.getArgument(), right.getArgument());
+			case AND: 			return and(op, left, right);
+			case OR: 			return or(op, left, right);
+			case EXOR: 			return exor(op, left, right);
 			
 			case DOT:			return dot(left, right);
 			case ASSIGN:		return assign(left, right.getArgument());
@@ -275,19 +275,19 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for relational Operation.");
 	}
 
-	private static Node and(Node node, Argument left, Argument right)
+	private static Node and(Node node, Node left, Node right)
 	{
-		return new BooleanArgument(node, left.asBoolean() && right.asBoolean());
+		return new BooleanArgument(node, left.getArgument().asBoolean() && right.getArgument().asBoolean());
 	}
 
-	private static Node or(Node node, Argument left, Argument right)
+	private static Node or(Node node, Node left, Node right)
 	{
-		return new BooleanArgument(node, left.asBoolean() || right.asBoolean());
+		return new BooleanArgument(node, left.getArgument().asBoolean() || right.getArgument().asBoolean());
 	}
 
-	private static Node exor(Node node, Argument left, Argument right)
+	private static Node exor(Node node, Node left, Node right)
 	{
-		return new BooleanArgument(node, left.asBoolean() ^ right.asBoolean());
+		return new BooleanArgument(node, left.getArgument().asBoolean() ^ right.getArgument().asBoolean());
 	}
 	
 	private static Node neg(Node node, Argument arg)
@@ -466,7 +466,7 @@ class Symbols
 		}
 		catch (Exception e)
 		{
-			throw new EvaluationException(call, "Can not invoke " + name, e);
+			throw new EvaluationException(call, "Can not invoke " + name + " on " + reciever, e);
 		}
 	}
 }
