@@ -62,7 +62,7 @@ public class Reference extends Node implements Operation
 		return resolve(true); 
 	}
 	
-	private Argument resolve(boolean recursive)
+	protected Argument resolve(boolean recursive)
 	{
 		if (name == null)
 		{

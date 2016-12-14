@@ -60,7 +60,7 @@ public class EvaluationTest
 				if ("array".equals(refName)) return array;
 				if ("list".equals(refName)) return list;
 				if ("carray".equals(refName)) return carray;
-				
+
 				throw new EvaluationException("Resolver error! Can not resolve '" + refName + "'.");
 			}
 
@@ -728,6 +728,35 @@ public class EvaluationTest
 		for(int i = 0; i < 24; i++)
 		{
 			assertEquals(5L, resultCache.get(i).get().asLong());
+		}
+	}
+	
+	@Test
+	public void testLambda()
+	{
+		System.out.println("Lambda");
+		final Config config = new Config();
+		config.debug = true;
+		config.resolver = Expression.DEFAULT_CONFIG.resolver;
+		config.invoker = new DefaultInvoker();
+		config.useVariables = true;
+
+		new Expression("var := [4, 3, 7, 2]", config).resolve();
+
+		try
+		{
+			config.assign("Collections", Collections.class);
+			new Expression("Collections.sort(var, {(a, b) b - a})", config).resolve();
+			
+			// Code für Java 8 ohne statischem Aufruf.
+			// new Expression("var.sort({(a, b) b - a})", config).resolve();
+			
+			System.out.println(config.getVariables().get("var"));
+		}
+		catch(EvaluationException e)
+		{
+			e.printStackTrace();
+			fail(e.getMessage());
 		}
 	}
 

@@ -32,6 +32,11 @@ public class ExpressionParser
 		}
 		cleanup();
 		
+		return nodeToOperation(node);
+	}
+	
+	private Operation nodeToOperation(Node node)
+	{
 		if (node instanceof Operation)
 			return (Operation) node;
 		else
@@ -97,21 +102,46 @@ public class ExpressionParser
 				pos++;
 				Node node = args.isEmpty() ? null : args.get(args.size()-1);
 				if (opCount == 0)
-				{	// Funktion
-					if (!(node instanceof Reference))
+				{
+					if (node instanceof Reference)
+					{	// Funktion
+						Reference ref = (Reference) node;
+						int argStart = args.size();
+						addListNodes(')');
+						
+						Node[] argNodes = new Node[args.size()- argStart];
+						for(int i = args.size()-1; i >= argStart; i--)
+						{
+							argNodes[i - argStart] = args.get(i);
+							args.remove(i);
+						}
+						ref.setArguments(argNodes);
+					}
+					else
 						throw new EvaluationException(node, "Invalid identifier.");
-					
-					Reference ref = (Reference) node;
+				}
+				else if (node instanceof LambdaArgument)
+				{	// Lambda
+					LambdaArgument lam = (LambdaArgument) node;
 					int argStart = args.size();
 					addListNodes(')');
+					opCount = 1;
 					
-					Node[] argNodes = new Node[args.size()- argStart];
+					String[] names = new String[args.size()- argStart];
 					for(int i = args.size()-1; i >= argStart; i--)
 					{
-						argNodes[i - argStart] = args.get(i);
-						args.remove(i);
+						node = args.get(i);
+						if (!(node instanceof Reference))
+							throwException("Invalid Argument.", null);
+						
+						Reference ref = (Reference) node;
+						if (node instanceof Reference)
+						{
+							names[i - argStart] = ref.getName();
+							args.remove(i);
+						}
 					}
-					ref.setArguments(argNodes);
+					lam.setNames(names);
 				}
 				else
 				{	// Klammer-Gruppierung
@@ -146,7 +176,39 @@ public class ExpressionParser
 						throw new EvaluationException(args.get(args.size()-1), "Invalid Index.");
 				}
 			}
-			else if (c == ',' || c == ')' || c == ']')
+			else if (c == '{')
+			{	// Lambda
+				LambdaArgument lam = new LambdaArgument(exp, pos);
+				args.add(lam);
+				pos++;
+				int lStart = args.size();
+				addNextNode();
+				opCount = 0;
+				
+				if (lenght <= pos || string.charAt(pos++) != '}') throwException("Missing token '}'", null);
+
+				String[] names = lam.getNames();
+				for(int i = lStart; i < args.size(); i++)
+				{
+					Node node = args.get(i);
+					if (node instanceof Reference)
+					{
+						Reference ref = (Reference) node;
+						for(int j = 0; j < names.length; j++)
+						{
+							if (names[j].equals(ref.getName()))
+							{
+								args.set(i, new LambdaArgument.LambdaReference(lam, node.getSourcePos(), ref.getName()));
+								break;
+							}
+						}
+					}
+				}
+				
+				lam.setOperation(nodeToOperation(resolveStatement(lStart)));
+				args.remove(lStart);
+			}
+			else if (c == ',' || c == ')' || c == '}' || c == ']')
 			{
 				if (args.size() > 0 && args.get(args.size()-1) instanceof Reference) return null;
 				

@@ -1,12 +1,17 @@
 package tws.expression;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.List;
 
 /**
  * Der Default-Invoker für das Auflösen von Feldern und Methoden in Ausdrücken.
+ * <p>
+ * Wenn in dem reciever der Methode {@link #invoke} ein Class-Objekt gekapselt ist, wird dieser als statisches Feld oder Methode behandelt.
+ * </p>
  * @author TheWhiteShadow
  * @see Config#invoker
  */
@@ -16,13 +21,21 @@ public class DefaultInvoker implements Invoker
 	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
 	{
 		Class clazz = reciever.getType();
+		Object obj = reciever.asObject();
+		boolean debug = reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug;
+		// Statischer Call
+		if (obj instanceof Class)
+		{
+			clazz = (Class) obj;
+			obj = null;
+		}
+		
 		if (args == null)
 		{
 			Field field = findField(clazz, name);
-			if (reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug)
-				System.out.println("Get: " + field);
+			if (debug) System.out.println("Get: " + field);
 			
-			return field.get(reciever.asObject());
+			return field.get(obj);
 		}
 		else
 		{
@@ -30,10 +43,9 @@ public class DefaultInvoker implements Invoker
 			{
 				Field field = findField(clazz, name);
 					
-				if (reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug)
-					System.out.println("Set: " + field);
+				if (debug) System.out.println("Set: " + field);
 				
-				field.set(reciever.asObject(), convertArgument(field.getType(), args[0]));
+				field.set(obj, convertArgument(field.getType(), args[0]));
 				return null;
 			}
 			catch(NoSuchFieldException e) {}
@@ -42,10 +54,9 @@ public class DefaultInvoker implements Invoker
 			if (method == null)
 				throw new NoSuchMethodException(name);
 			
-			if (reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug)
-				System.out.println("Invoke: " + method);
+			if (debug) System.out.println("Invoke: " + method);
 			
-			return callMethod(method, reciever, args);
+			return callMethod(method, obj, args);
 		}
 	}
 	
@@ -77,7 +88,7 @@ public class DefaultInvoker implements Invoker
 		return method;
 	}
 
-	private Object callMethod(Method method, Argument reciever, Argument[] args)
+	private Object callMethod(Method method, Object obj, Argument[] args)
 			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
 		if (args.length > 0)
@@ -88,11 +99,11 @@ public class DefaultInvoker implements Invoker
 			{
 				argArray[i] = convertArgument(paramTypes[i], args[i]);
 			}
-			return method.invoke(reciever.asObject(), argArray);
+			return method.invoke(obj, argArray);
 		}
 		else
 		{
-			return method.invoke(reciever.asObject());
+			return method.invoke(obj);
 		}
 	}
 	
@@ -114,6 +125,10 @@ public class DefaultInvoker implements Invoker
 				if (arg.isNumber()) return true;
 				return false;
 			}
+		}
+		else if (targetType.isInterface() && arg instanceof LambdaArgument)
+		{
+			return true;
 		}
 		else
 		{
@@ -147,6 +162,20 @@ public class DefaultInvoker implements Invoker
 			return Character.valueOf(str.charAt(0));
 		}
 //		if (targetType == double.class || targetType == Double.class) return (Double.valueOf(arg.asDouble()));
+		
+		if (targetType.isInterface() && arg instanceof LambdaArgument)
+		{
+			final LambdaArgument lambda = (LambdaArgument) arg;
+			Object proxy = Proxy.newProxyInstance(targetType.getClassLoader(), new Class[] {targetType}, new InvocationHandler()
+			{
+				@Override
+				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+				{
+					return convertArgument(method.getReturnType(), lambda.resolveWith(args));
+				}
+			});
+			return proxy;
+		}
 		
 		return arg.asObject();
 	}

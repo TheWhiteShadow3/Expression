@@ -1,7 +1,8 @@
 package tws.expression;
 
 /**
- * Ein Invoker kann Felder und Methoden aufrufen.
+ * Ein Invoker wertet eine Variable oder Funktion in Bezug auf einen Empfänger auf, der über den "DOT"-Operator verknüpft ist.
+ * Er kann somit Felder lesen und setzen sowie Methoden von Objekten aufrufen.
  * @author TheWhiteShadow
  * @see Config
  * @see Resolver
