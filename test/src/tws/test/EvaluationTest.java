@@ -25,6 +25,7 @@ import tws.expression.Config;
 import tws.expression.DefaultInvoker;
 import tws.expression.EvaluationException;
 import tws.expression.Expression;
+import tws.expression.LambdaArgument;
 import tws.expression.Operation;
 import tws.expression.Resolver;
 import tws.expression.WrapperOperation;
@@ -60,7 +61,7 @@ public class EvaluationTest
 				if ("array".equals(refName)) return array;
 				if ("list".equals(refName)) return list;
 				if ("carray".equals(refName)) return carray;
-
+				
 				throw new EvaluationException("Resolver error! Can not resolve '" + refName + "'.");
 			}
 
@@ -740,7 +741,9 @@ public class EvaluationTest
 		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		config.invoker = new DefaultInvoker();
 		config.useVariables = true;
-
+		Object result;
+		long l;
+		
 		new Expression("var := [4, 3, 7, 2]", config).resolve();
 
 		try
@@ -751,13 +754,34 @@ public class EvaluationTest
 			// Code für Java 8 ohne statischem Aufruf.
 			// new Expression("var.sort({(a, b) b - a})", config).resolve();
 			
-			System.out.println(config.getVariables().get("var"));
+			List<Long> list = (List<Long>) config.getVariables().get("var");
+			assertEquals(7L, (long) list.get(0));
 		}
 		catch(EvaluationException e)
 		{
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+		
+		result = new Expression("l := {(a) a*a}", config).resolve();
+		assertTrue(result instanceof LambdaArgument);
+		
+		l = ((LambdaArgument) result).with(3).resolve().asLong();
+		assertEquals(9L, l);
+		
+		l = new Expression("l.with(4)", config).resolve().asLong();
+		assertEquals(16L, l);
+
+		/* FIXME: Geht so nicht. Wäre aber schöner.
+		 * Allgemein sind Lambdas schwer einzusortieren.
+		 * Das Lambdas 2-Stufig aufgelöst werden müssen, ist allerdings noch Unschöner.
+		 */
+//		l = new Expression("{1+1}", config).resolve().asLong();
+		
+		result = new Expression("{1+1}", config).resolve().asObject();
+		
+		l = ((LambdaArgument) result).with(3).resolve().asLong();
+		assertEquals(2L, l);
 	}
 
 	

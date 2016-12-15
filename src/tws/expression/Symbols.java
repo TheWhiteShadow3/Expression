@@ -439,6 +439,8 @@ class Symbols
 		{
 			Config config = recieverNode.getExpression().getConfig();
 			Object result = config.invoke(reciever, name, args);
+			if (result instanceof Operation)
+				result = ((Operation) result).resolve();
 			return (Node) Config.wrap(recieverNode, result, false);
 		}
 		catch (NoSuchFieldException e)

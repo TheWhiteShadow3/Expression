@@ -3,6 +3,8 @@ package tws.expression;
 import java.util.ArrayList;
 import java.util.List;
 
+import tws.expression.LambdaArgument.LambdaReference;
+
 
 public class ExpressionParser
 {
@@ -135,13 +137,11 @@ public class ExpressionParser
 							throwException("Invalid Argument.", null);
 						
 						Reference ref = (Reference) node;
-						if (node instanceof Reference)
-						{
-							names[i - argStart] = ref.getName();
-							args.remove(i);
-						}
+						
+						names[i - argStart] = ref.getName();
+						args.remove(i);
 					}
-					lam.setNames(names);
+					lam.setParams(names);
 				}
 				else
 				{	// Klammer-Gruppierung
@@ -187,7 +187,8 @@ public class ExpressionParser
 				
 				if (lenght <= pos || string.charAt(pos++) != '}') throwException("Missing token '}'", null);
 
-				String[] names = lam.getNames();
+				String[] names = lam.getParams();
+				List<LambdaReference> refs = new ArrayList<LambdaReference>();
 				for(int i = lStart; i < args.size(); i++)
 				{
 					Node node = args.get(i);
@@ -198,14 +199,16 @@ public class ExpressionParser
 						{
 							if (names[j].equals(ref.getName()))
 							{
-								args.set(i, new LambdaArgument.LambdaReference(lam, node.getSourcePos(), ref.getName()));
+								LambdaReference lRef = new LambdaReference(node, ref.getName(), j);
+								args.set(i, lRef);
+								refs.add(lRef);
 								break;
 							}
 						}
 					}
 				}
 				
-				lam.setOperation(nodeToOperation(resolveStatement(lStart)));
+				lam.setOperation(nodeToOperation(resolveStatement(lStart)), refs);
 				args.remove(lStart);
 			}
 			else if (c == ',' || c == ')' || c == '}' || c == ']')
@@ -267,7 +270,6 @@ public class ExpressionParser
 			}
 		}
 		if (isString) throwException("Missing String-Terminator.", null);
-		if (exp.getConfig().debug) System.out.print(args);
 		
 		if (args.isEmpty()) return new NullArgument(exp, 0);
 		if (args.get(args.size()-1) instanceof OperationNode)
@@ -278,6 +280,7 @@ public class ExpressionParser
 	
 	private Node resolveStatement(int offset)
 	{
+		if (exp.getConfig().debug) System.out.print(args.subList(offset, args.size()));
 		while(args.size() > offset+1)
 		{
 			int index = -1;

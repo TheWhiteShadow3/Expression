@@ -1,8 +1,6 @@
 package tws.expression;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Stellt eine Lambda Funktion da.
@@ -14,30 +12,31 @@ public class LambdaArgument extends Node implements Argument
 {
 	private Operation op;
 	private String[] names = new String[0];
-	private Map<String, Object> values = new HashMap<String, Object>();
+	private List<LambdaReference> refs;
 	
 	LambdaArgument(Expression exp, int sourcePos)
 	{
 		super(exp, sourcePos);
 	}
 
-	void setNames(String[] names)
-	{
-		this.names = names;
-	}
-
-	String[] getNames()
+	public String[] getParams()
 	{
 		return names;
 	}
 
-	void setOperation(Operation op)
+	public void setParams(String[] names)
+	{
+		this.names = names;
+	}
+
+	void setOperation(Operation op, List<LambdaReference> refs)
 	{
 		this.op = op;
+		this.refs = refs;
 	}
 	
 	@Override
-	public Class<?> getType() { return Operation.class; }
+	public Class<?> getType() { return LambdaArgument.class; }
 	@Override
 	public boolean isNumber() { return false; }
 	@Override
@@ -58,7 +57,7 @@ public class LambdaArgument extends Node implements Argument
 	@Override
 	public long asLong() { throw new UnsupportedOperationException(); }
 	@Override
-	public Object asObject() { throw new UnsupportedOperationException(); }
+	public Object asObject() { return this; }
 	@Override
 	public List<?> asList() { throw new UnsupportedOperationException(); }
 
@@ -76,46 +75,40 @@ public class LambdaArgument extends Node implements Argument
 		return '{' + op.toString() + '}';
 	}
 
-	public int getArgumentCount()
+	public Operation with(final Object... args)
 	{
-		return names.length;
-	}
-
-	public Argument resolveWith(Object[] args)
-	{
-		try
+		return new Operation()
 		{
-			for(int i = 0; i < names.length; i++)
+			private Object[] arguments = args;
+			
+			@Override
+			public Argument resolve() throws EvaluationException
 			{
-				values.put(names[i], args[i]);
+				for(LambdaReference r : refs)
+				{
+					r.value = arguments[r.index];
+				}
+				
+				return op.resolve();
 			}
-		}
-		catch(ArrayIndexOutOfBoundsException e)
-		{
-			throw new EvaluationException(this, "Too many Parameters defined.", e);
-		}
-		return op.resolve();
-	}
-	
-	private Object get(String name)
-	{
-		return values.get(name);
+		};
 	}
 
 	static class LambdaReference extends Reference
 	{
-		private LambdaArgument lambda;
+		Object value;
+		private int index;
 
-		LambdaReference(LambdaArgument lambda, int sourcePos, String name)
+		LambdaReference(Node node, String name, int index)
 		{
-			super(lambda.getExpression(), sourcePos, name);
-			this.lambda = lambda;
+			super(node, name);
+			this.index = index;
 		}
 
 		@Override
 		public Argument resolve(boolean recursive) throws EvaluationException
 		{
-			return Config.wrap(this, lambda.get(getName()), recursive);
+			return Config.wrap(this, value, recursive);
 		}
 	}
 }

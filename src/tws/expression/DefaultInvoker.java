@@ -1,5 +1,6 @@
-package tws.expression;
+﻿package tws.expression;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -91,19 +92,29 @@ public class DefaultInvoker implements Invoker
 	private Object callMethod(Method method, Object obj, Argument[] args)
 			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
-		if (args.length > 0)
+		try
 		{
-			Class[] paramTypes = method.getParameterTypes();
-			Object[] argArray = new Object[args.length];
-			for (int i = 0; i < argArray.length; i++)
+			if (args.length > 0)
 			{
-				argArray[i] = convertArgument(paramTypes[i], args[i]);
-			}
+				Class[] paramTypes = method.getParameterTypes();
+				Object[] argArray = new Object[args.length];
+				for (int i = 0; i < argArray.length; i++)
+				{
+					argArray[i] = convertArgument(paramTypes[i], args[i]);
+				}
 			return method.invoke(obj, argArray);
 		}
 		else
 		{
-			return method.invoke(obj);
+				return method.invoke(obj);
+			}
+		}
+		catch(InvocationTargetException e)
+		{
+			if (e.getCause() instanceof EvaluationException)
+				throw (EvaluationException) e.getCause();
+			
+			throw e;
 		}
 	}
 	
@@ -140,7 +151,12 @@ public class DefaultInvoker implements Invoker
 			if (targetType == Long.class) return canConvertArgument(long.class, arg);
 			if (targetType == Float.class) return canConvertArgument(float.class, arg);
 			if (targetType == Double.class) return canConvertArgument(double.class, arg);
-			if (targetType.isArray() && arg.getType() == List.class) return true;
+			if (targetType == Object.class) return true;
+			if (targetType.isArray())
+			{
+				if (arg.getType() == List.class) return true;
+				return canConvertArgument(targetType.getComponentType(), arg);
+			}
 			if (targetType.isAssignableFrom(arg.getType())) return true;
 		}
 		return false;
@@ -148,8 +164,7 @@ public class DefaultInvoker implements Invoker
 	
 	private Object convertArgument(Class targetType, Argument arg)
 	{
-		if (targetType.isArray()) return arg.asList().toArray();
-		
+
 		if (targetType == byte.class || targetType == Byte.class) return (Byte.valueOf((byte) arg.asLong()));
 		if (targetType == short.class || targetType == Short.class) return (Short.valueOf((short) arg.asLong()));
 		if (targetType == int.class || targetType == Integer.class) return (Integer.valueOf((int) arg.asLong()));
@@ -161,7 +176,16 @@ public class DefaultInvoker implements Invoker
 				throw new IllegalArgumentException("Can not cast string with length other then one into char.");
 			return Character.valueOf(str.charAt(0));
 		}
-//		if (targetType == double.class || targetType == Double.class) return (Double.valueOf(arg.asDouble()));
+		if (targetType.isArray())
+		{
+			if (arg.getType() == List.class)
+			{
+				return arg.asList().toArray();
+			}
+			Object array = Array.newInstance(targetType.getComponentType(), 1);
+			Array.set(array, 0, convertArgument(targetType.getComponentType(), arg));
+			return array;
+		}
 		
 		if (targetType.isInterface() && arg instanceof LambdaArgument)
 		{
@@ -171,7 +195,7 @@ public class DefaultInvoker implements Invoker
 				@Override
 				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
 				{
-					return convertArgument(method.getReturnType(), lambda.resolveWith(args));
+					return convertArgument(method.getReturnType(), lambda.with(args).resolve());
 				}
 			});
 			return proxy;
