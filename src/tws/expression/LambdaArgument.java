@@ -42,37 +42,48 @@ public class LambdaArgument extends Node implements Argument
 	@Override
 	public boolean isString() { return false; }
 	@Override
-	public boolean isNull() { return true; }
+	public boolean isNull() { return false; }
 	@Override
 	public boolean isBoolean() { return false; }
 	@Override
-	public boolean isObject() { return false; }
+	public boolean isObject() { return true; }
 
 	@Override
-	public String asString() { throw new UnsupportedOperationException(); }
+	public String asString() { return resolve().asString(); }
 	@Override
-	public boolean asBoolean() { throw new UnsupportedOperationException(); }
+	public boolean asBoolean() { return resolve().asBoolean(); }
 	@Override
-	public double asDouble() { throw new UnsupportedOperationException(); }
+	public double asDouble() { return resolve().asDouble(); }
 	@Override
-	public long asLong() { throw new UnsupportedOperationException(); }
+	public long asLong() { return resolve().asLong(); }
 	@Override
-	public Object asObject() { return this; }
+	public Object asObject() { return resolve().asObject(); }
 	@Override
-	public List<?> asList() { throw new UnsupportedOperationException(); }
+	public List<?> asList() { return resolve().asList(); }
 
 	@Override
 	public Argument getArgument()
 	{
 		return this;
 	}
-	
+
+	@Override
+	Object getObject()
+	{
+		return this;
+	}
+
 	@Override
 	public String toString()
 	{
 		if (op == null) return "{}";
 		
 		return '{' + op.toString() + '}';
+	}
+	
+	public Argument resolve()
+	{
+		return with((Object[]) null).resolve();
 	}
 
 	public Operation with(final Object... args)

@@ -26,8 +26,8 @@ public interface Resolver
 	 * Damit die Methode überhaupt aufgerufen wird, muss {@link Config#useVariables} auf <code>false</code> sein.
 	 * </p>
 	 * @param name Name der Variable.
-	 * @param arg Wert der Zuweisung.
+	 * @param value Wert der Zuweisung.
 	 * @throws EvaluationException Wenn der Wert nicht zugewiesen werden konnte.
 	 */
-	public void assign(String name, Argument arg) throws EvaluationException;
+	public void assign(String name, Object value) throws EvaluationException;
 }

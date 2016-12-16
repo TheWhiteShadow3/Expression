@@ -74,6 +74,11 @@ public abstract class Node
 	 * @return Das Argument des Knoten.
 	 */
 	public abstract Argument getArgument();
+	
+	Object getObject()
+	{
+		return getArgument().asObject();
+	}
 
 	@Override
 	public String toString()

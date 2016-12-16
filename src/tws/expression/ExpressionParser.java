@@ -42,7 +42,7 @@ public class ExpressionParser
 		if (node instanceof Operation)
 			return (Operation) node;
 		else
-			return new WrapperOperation((Argument) node);
+			return new WrapperOperation(node.getArgument());
 	}
 	
 	private void cleanup()

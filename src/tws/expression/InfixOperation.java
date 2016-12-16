@@ -27,7 +27,7 @@ public class InfixOperation extends Node implements Operation
 	@Override
 	public Argument resolve() throws EvaluationException
 	{
-		return (Argument) Symbols.resolveTwoArgs(symbol, left, right);
+		return Symbols.resolveTwoArgs(symbol, left, right).getArgument();
 	}
 
 	@Override

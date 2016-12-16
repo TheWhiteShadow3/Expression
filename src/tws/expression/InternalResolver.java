@@ -158,12 +158,19 @@ class InternalResolver implements Resolver
 		return max;
 	}
 
+//	@Override
+//	public void assign(String name, Argument value) throws EvaluationException
+//	{
+//		assign(name, (Object) value);
+//	}
+
 	@Override
-	public void assign(String name, Argument value) throws EvaluationException
+	public void assign(String name, Object value) throws EvaluationException
 	{
 		if (config.useVariables)
 		{
-			assign(name, value.asObject());
+			if (variables == null) variables = new HashMap<String, Object>();
+			variables.put(name, value);
 		}
 		else
 		{
@@ -172,12 +179,6 @@ class InternalResolver implements Resolver
 			
 			r.assign(name, value);
 		}
-	}
-
-	public void assign(String name, Object value) throws EvaluationException
-	{
-		if (variables == null) variables = new HashMap<String, Object>();
-		variables.put(name, value);
 	}
 	
 	public Map<String, Object> getVariables()

@@ -33,7 +33,7 @@ class Symbols
 			case EXOR: 			return exor(op, left, right);
 			
 			case DOT:			return dot(left, right);
-			case ASSIGN:		return assign(left, right.getArgument());
+			case ASSIGN:		return assign(left, right);
 			case INDEX:			return index(left, right);
 			
 			default:
@@ -310,14 +310,16 @@ class Symbols
 		return new BooleanArgument(node, !arg.asBoolean());
 	}
 
-	private static Node assign(Node left, Argument arg)
+	private static Node assign(Node left, Node right)
 	{
+		Object value = right.getObject();
+		
 		if (left instanceof Reference)
 		{
 			String var = ((Reference) left).getName();
 
-			left.getExpression().getConfig().assign(var, arg);
-			return (Node) arg;
+			left.getExpression().getConfig().assign(var, value);
+			return right;
 		}
 		else if (left instanceof InfixOperation)
 		{
@@ -334,20 +336,17 @@ class Symbols
 					int index = getIndex(nodes[1], Array.getLength(collection));
 					Class<?> cls = collection.getClass().getComponentType();
 					
-					Object value;
 					if (cls == int.class)
-						value = (int) arg.asLong();
+						value = (int) right.getArgument().asLong();
 					else if (cls == float.class)
-						value = (float) arg.asDouble();
-					else if (cls == char.class && arg.asString().length() == 1)
+						value = (float) right.getArgument().asDouble();
+					else if (cls == char.class && right.getArgument().asString().length() == 1)
 					{
-						String str = arg.asString();
+						String str = right.getArgument().asString();
 						if (str.length() != 1)
-							throw new EvaluationException((Node) arg, "Can not cast string with length other then one into char.");
+							throw new EvaluationException(right, "Can not cast string with length other then one into char.");
 						value = str.charAt(0);
 					}
-					else
-						value = arg.asObject();
 					
 					Array.set(collection, index, value);
 				}
@@ -355,23 +354,23 @@ class Symbols
 				{
 					List list = (List) collection;
 					int index = getIndex(nodes[1], list.size());
-					list.set(index, arg.asObject());
+					list.set(index, value);
 				}
 				else if (collection instanceof Map)
 				{
 					Object key = nodes[1].getArgument().asObject();
-					((Map) collection).put(key, arg.asObject());
+					((Map) collection).put(key, value);
 				}
 				else
 					throw new EvaluationException(left, "Invalid list type " + collection.getClass().getName() + ".");
 				
-				return (Node) arg;
+				return right;
 			}
 			else if (op.getSymbol().getOperator() == Operator.DOT)
 			{
-				((Reference) nodes[1]).setArguments(new Node[] {(Node) arg});
+				((Reference) nodes[1]).setArguments(new Node[] {right});
 				dot(nodes[0], nodes[1]);
-				return (Node) arg;
+				return right;
 			}
 		}
 		throw new EvaluationException(left, "Invalid Type for Operation: ASSIGN");

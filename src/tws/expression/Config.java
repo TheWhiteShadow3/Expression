@@ -3,7 +3,6 @@ package tws.expression;
 import java.lang.reflect.Array;
 import java.text.Collator;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -258,9 +257,9 @@ public final class Config
 	 * Gibt eine Ansicht auf alle gesetzten Variablen zurück.
 	 * @return Map, der gesetzten Variablen.
 	 */
-	public Map<String, Object> getVariables()
+	public Object getVariable(String name)
 	{
-		return internalResolver.getVariables();
+		return internalResolver.resolve(name, null);
 	}
 
 	/**

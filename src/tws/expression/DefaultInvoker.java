@@ -22,7 +22,7 @@ public class DefaultInvoker implements Invoker
 	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
 	{
 		Class clazz = reciever.getType();
-		Object obj = reciever.asObject();
+		Object obj = ((Node) reciever).getObject();
 		boolean debug = reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug;
 		// Statischer Call
 		if (obj instanceof Class)
@@ -164,7 +164,6 @@ public class DefaultInvoker implements Invoker
 	
 	private Object convertArgument(Class targetType, Argument arg)
 	{
-
 		if (targetType == byte.class || targetType == Byte.class) return (Byte.valueOf((byte) arg.asLong()));
 		if (targetType == short.class || targetType == Short.class) return (Short.valueOf((short) arg.asLong()));
 		if (targetType == int.class || targetType == Integer.class) return (Integer.valueOf((int) arg.asLong()));

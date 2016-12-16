@@ -98,6 +98,9 @@ public class Reference extends Node implements Operation
 	@Override
 	public Argument getArgument()
 	{
+		if (name == null)
+			System.out.println("Implizite Konvertierung von Array.");
+		
 		return resolve(false);
 	}
 }

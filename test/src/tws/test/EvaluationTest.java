@@ -66,7 +66,7 @@ public class EvaluationTest
 			}
 
 			@Override
-			public void assign(String name, Argument arg) throws EvaluationException
+			public void assign(String name, Object value) throws EvaluationException
 			{
 				
 			}
@@ -696,7 +696,7 @@ public class EvaluationTest
 		
 		// Auch statische Felder müssen von einem Objekt aus aufgerufen werden!
 		result = new Expression("pantsu.SHIRO_PANTSU := pantsu", config).resolve().asObject();
-		assertEquals(config.getVariables().get("pantsu"), result);
+		assertEquals(config.getVariable("pantsu"), result);
 	}
 	
 	@Test
@@ -754,7 +754,7 @@ public class EvaluationTest
 			// Code für Java 8 ohne statischem Aufruf.
 			// new Expression("var.sort({(a, b) b - a})", config).resolve();
 			
-			List<Long> list = (List<Long>) config.getVariables().get("var");
+			List<Long> list = (List<Long>) config.getVariable("var");
 			assertEquals(7L, (long) list.get(0));
 		}
 		catch(EvaluationException e)
@@ -776,11 +776,11 @@ public class EvaluationTest
 		 * Allgemein sind Lambdas schwer einzusortieren.
 		 * Das Lambdas 2-Stufig aufgelöst werden müssen, ist allerdings noch Unschöner.
 		 */
-//		l = new Expression("{1+1}", config).resolve().asLong();
+		l = new Expression("{1+1}", config).resolve().asLong();
 		
-		result = new Expression("{1+1}", config).resolve().asObject();
+//		result = new Expression("{1+1}", config).resolve().asObject();
 		
-		l = ((LambdaArgument) result).with(3).resolve().asLong();
+//		l = ((LambdaArgument) result).with(3).resolve().asLong();
 		assertEquals(2L, l);
 	}
 
