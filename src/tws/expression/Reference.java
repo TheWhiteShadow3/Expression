@@ -74,7 +74,7 @@ public class Reference extends Node implements Operation
 			try
 			{
 				Object obj = resolver.resolve(name, resolveArguments());
-				
+
 				return Config.wrap(this, obj, recursive);
 			}
 			catch(Exception e)

@@ -652,6 +652,16 @@ public class EvaluationTest
 		long l = op.resolve().asLong();
 		assertEquals(3, l);
 		
+		try
+		{
+			result = new Expression("5.intValue()", config).compile();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		l = new Expression("(5).intValue()", config).resolve().asLong();
+		assertEquals(5, l);
+		
 		String str = new Expression("'abc'.charAt(0)", config).resolve().asString();
 		assertEquals("a", str);
 		
@@ -772,16 +782,11 @@ public class EvaluationTest
 		l = new Expression("l.with(4)", config).resolve().asLong();
 		assertEquals(16L, l);
 
-		/* FIXME: Geht so nicht. Wäre aber schöner.
-		 * Allgemein sind Lambdas schwer einzusortieren.
-		 * Das Lambdas 2-Stufig aufgelöst werden müssen, ist allerdings noch Unschöner.
-		 */
 		l = new Expression("{1+1}", config).resolve().asLong();
-		
-//		result = new Expression("{1+1}", config).resolve().asObject();
-		
-//		l = ((LambdaArgument) result).with(3).resolve().asLong();
 		assertEquals(2L, l);
+		
+		l = new Expression("{(a) var.size() + a}.with(5)", config).resolve().asLong();
+		assertEquals(9L, l);
 	}
 
 	

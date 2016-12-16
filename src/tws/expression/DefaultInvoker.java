@@ -22,6 +22,9 @@ public class DefaultInvoker implements Invoker
 	public Object invoke(Argument reciever, String name, Argument[] args) throws Exception
 	{
 		Class clazz = reciever.getType();
+		if (clazz.isPrimitive())
+			clazz = reciever.asObject().getClass();
+		
 		Object obj = ((Node) reciever).getObject();
 		boolean debug = reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug;
 		// Statischer Call
@@ -83,7 +86,6 @@ public class DefaultInvoker implements Invoker
 			}
 			method = m;
 			break;
-//			if (args.length == 0) break;
 		}
 		
 		return method;

@@ -211,9 +211,15 @@ public class ExpressionParser
 				lam.setOperation(nodeToOperation(resolveStatement(lStart)), refs);
 				args.remove(lStart);
 			}
+			else if (c == '}')
+			{
+				if (opCount > 0) throwException("Missing operand.", null);
+				return null;
+			}
 			else if (c == ',' || c == ')' || c == '}' || c == ']')
 			{
-				if (args.size() > 0 && args.get(args.size()-1) instanceof Reference) return null;
+				Node last = args.isEmpty() ? null : args.get(args.size()-1);
+				if (last instanceof Reference) return null;
 				
 				if (opCount > 0) throwException("Missing operand.", null);
 				break;
@@ -240,10 +246,18 @@ public class ExpressionParser
 						}
 					}
 					String str = string.substring(start, pos);
+					try
+					{
 					if (isDouble)
 						args.add( new FloatArgument(exp, start, Double.parseDouble(str)) );
 					else
 						args.add( new IntegerArgument(exp, start, Long.parseLong(str)) );
+					}
+					catch(NumberFormatException e)
+					{
+						pos = start;
+						throwException("Can not parse '" + str + "' to " + ((isDouble) ? "double." : "long."), e);
+					}
 				}
 				else
 				{
