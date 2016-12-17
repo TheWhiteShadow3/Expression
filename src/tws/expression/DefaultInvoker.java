@@ -1,4 +1,4 @@
-﻿package tws.expression;
+package tws.expression;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -78,11 +78,24 @@ public class DefaultInvoker implements Invoker
 			if (!m.getName().equals(callName)) continue;
 			
 			Class[] paramTypes = m.getParameterTypes();
-			if (args.length != paramTypes.length) continue;
-			
-			for (int i = 0; i < args.length; i++)
+			if (args.length == paramTypes.length)
 			{
-				if (!canConvertArgument(paramTypes[i], args[i])) continue METHOD_LOOP;
+				for (int i = 0; i < args.length; i++)
+				{
+					if (!canConvertArgument(paramTypes[i], args[i])) continue METHOD_LOOP;
+				}
+			}
+			else
+			{
+				if (paramTypes.length == 1 && paramTypes[0].isArray())
+				{
+					Class arrayType = paramTypes[0].getComponentType();
+					for (int i = 0; i < args.length; i++)
+					{
+						if (!canConvertArgument(arrayType, args[i])) continue METHOD_LOOP;
+					}
+				}
+				else continue;
 			}
 			method = m;
 			break;
@@ -100,14 +113,27 @@ public class DefaultInvoker implements Invoker
 			{
 				Class[] paramTypes = method.getParameterTypes();
 				Object[] argArray = new Object[args.length];
-				for (int i = 0; i < argArray.length; i++)
+				
+				if (paramTypes.length == args.length)
 				{
-					argArray[i] = convertArgument(paramTypes[i], args[i]);
+					for (int i = 0; i < args.length; i++)
+					{
+						argArray[i] = convertArgument(paramTypes[i], args[i]);
+					}
 				}
-			return method.invoke(obj, argArray);
-		}
-		else
-		{
+				else
+				{
+					Class arrayType = paramTypes[0].getComponentType();
+					for (int i = 0; i < args.length; i++)
+					{
+						argArray[i] = convertArgument(arrayType, args[i]);
+					}
+					argArray = new Object[] {argArray};
+				}
+				return method.invoke(obj, argArray);
+			}
+			else
+			{
 				return method.invoke(obj);
 			}
 		}
@@ -202,6 +228,6 @@ public class DefaultInvoker implements Invoker
 			return proxy;
 		}
 		
-		return arg.asObject();
+		return ((Node) arg).getObject();
 	}
 }

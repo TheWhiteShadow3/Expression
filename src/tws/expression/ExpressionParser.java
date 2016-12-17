@@ -3,7 +3,7 @@ package tws.expression;
 import java.util.ArrayList;
 import java.util.List;
 
-import tws.expression.LambdaArgument.LambdaReference;
+import tws.expression.LambdaArgument.LambdaResolver;
 
 
 public class ExpressionParser
@@ -14,6 +14,7 @@ public class ExpressionParser
 	private int pos;
 	private Expression exp;
 	private List<Node> args;
+	private Resolver resolver;
 	
 	public ExpressionParser() {}
 	
@@ -25,6 +26,7 @@ public class ExpressionParser
 		this.start = 0;
 		this.pos = 0;
 		this.args = new ArrayList<Node>(12);
+		this.resolver = exp.getConfig().internalResolver;
 		
 		if (exp.getConfig().debug) System.out.println('"' + string + '"');
 		Node node = addNextNode();
@@ -51,6 +53,7 @@ public class ExpressionParser
 		this.exp = null;
 		this.string = null;
 		this.args = null;
+		this.resolver = null;
 	}
 	
 	private Node addNextNode()
@@ -180,41 +183,20 @@ public class ExpressionParser
 			{	// Lambda
 				LambdaArgument lam = new LambdaArgument(exp, pos);
 				args.add(lam);
+				
+				LambdaResolver lResolver = new LambdaResolver(resolver); 
+				this.resolver = lResolver;
+				
 				pos++;
 				int lStart = args.size();
 				addNextNode();
 				opCount = 0;
 				
 				if (lenght <= pos || string.charAt(pos++) != '}') throwException("Missing token '}'", null);
-
-				String[] names = lam.getParams();
-				List<LambdaReference> refs = new ArrayList<LambdaReference>();
-				for(int i = lStart; i < args.size(); i++)
-				{
-					Node node = args.get(i);
-					if (node instanceof Reference)
-					{
-						Reference ref = (Reference) node;
-						for(int j = 0; j < names.length; j++)
-						{
-							if (names[j].equals(ref.getName()))
-							{
-								LambdaReference lRef = new LambdaReference(node, ref.getName(), j);
-								args.set(i, lRef);
-								refs.add(lRef);
-								break;
-							}
-						}
-					}
-				}
 				
-				lam.setOperation(nodeToOperation(resolveStatement(lStart)), refs);
+				lam.setOperation(nodeToOperation(resolveStatement(lStart)), lResolver);
 				args.remove(lStart);
-			}
-			else if (c == '}')
-			{
-				if (opCount > 0) throwException("Missing operand.", null);
-				return null;
+				this.resolver = lResolver.parent;
 			}
 			else if (c == ',' || c == ')' || c == '}' || c == ']')
 			{
@@ -507,7 +489,7 @@ public class ExpressionParser
 			args.add(new NullArgument(exp, start));
 		else
 			// Kein Schlüsselwort
-			args.add(new Reference(exp, start, name));
+			args.add(new Reference(exp, start, name, resolver));
 	}
 	
 	private boolean isIdentifier(char c)

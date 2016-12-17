@@ -1,6 +1,8 @@
 package tws.expression;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Stellt eine Lambda Funktion da.
@@ -12,7 +14,7 @@ public class LambdaArgument extends Node implements Argument
 {
 	private Operation op;
 	private String[] names = new String[0];
-	private List<LambdaReference> refs;
+	private LambdaResolver resolver;
 	
 	LambdaArgument(Expression exp, int sourcePos)
 	{
@@ -29,10 +31,10 @@ public class LambdaArgument extends Node implements Argument
 		this.names = names;
 	}
 
-	void setOperation(Operation op, List<LambdaReference> refs)
+	void setOperation(Operation op, LambdaResolver resolver)
 	{
 		this.op = op;
-		this.refs = refs;
+		this.resolver = resolver;
 	}
 	
 	@Override
@@ -90,36 +92,75 @@ public class LambdaArgument extends Node implements Argument
 	{
 		return new Operation()
 		{
-			private Object[] arguments = args;
+			private Map<String, Object> values = new HashMap<String, Object>();
+			{
+				for(int i = 0; i < names.length; i++)
+				{
+					values.put(names[i], args[i]);
+				}
+			}
 			
 			@Override
 			public Argument resolve() throws EvaluationException
 			{
-				for(LambdaReference r : refs)
-				{
-					r.value = arguments[r.index];
-				}
+				resolver.set(values);
 				
 				return op.resolve();
 			}
 		};
 	}
 
-	static class LambdaReference extends Reference
+	static class LambdaResolver implements Resolver
 	{
-		Object value;
-		private int index;
-
-		LambdaReference(Node node, String name, int index)
+		final Resolver parent;
+		private final ThreadLocal<Map<String, Object>> threadVariables = new ThreadLocal<Map<String, Object>>();
+		
+		LambdaResolver(Resolver parent)
 		{
-			super(node, name);
-			this.index = index;
+			this.parent = parent;
+		}
+
+		public void set(Map<String, Object> values)
+		{
+			threadVariables.set(values);
 		}
 
 		@Override
-		public Argument resolve(boolean recursive) throws EvaluationException
+		public Object resolve(String name, Argument[] args) throws EvaluationException
 		{
-			return Config.wrap(this, value, recursive);
+			Map<String, Object> vars = threadVariables.get();
+			if (vars.containsKey(name))
+			{
+				return vars.get(name);
+			}
+			else
+			{
+				return parent.resolve(name, args);
+			}
+		}
+
+		@Override
+		public void assign(String name, Object arg) throws EvaluationException
+		{
+			this.threadVariables.get().put(name, arg);
 		}
 	}
+	
+//	static class LambdaReference extends Reference
+//	{
+//		Object value;
+//		private int index;
+//
+//		LambdaReference(Node node, String name, int index)
+//		{
+//			super(node, name);
+//			this.index = index;
+//		}
+//
+//		@Override
+//		public Argument resolve(boolean recursive) throws EvaluationException
+//		{
+//			return Config.wrap(this, value, recursive);
+//		}
+//	}
 }

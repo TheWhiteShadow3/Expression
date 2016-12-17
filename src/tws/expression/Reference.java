@@ -10,11 +10,13 @@ public class Reference extends Node implements Operation
 {
 	private final String name;
 	private Node[] argNodes;
+	private Resolver resolver;
 	
-	Reference(Expression exp, int sourcePos, String name)
+	Reference(Expression exp, int sourcePos, String name, Resolver resolver)
 	{
 		super(exp, sourcePos);
 		this.name = name;
+		this.resolver = resolver;
 	}
 	
 	Reference(Expression exp, int sourcePos, Node[] argNodes)
@@ -24,10 +26,11 @@ public class Reference extends Node implements Operation
 		this.argNodes = argNodes;
 	}
 	
-	Reference(Node initiator, String name)
+	Reference(Node initiator, String name, Resolver resolver)
 	{
 		super(initiator);
 		this.name = name;
+		this.resolver = resolver;
 	}
 
 	void setArguments(Node[] argNodes)
@@ -70,7 +73,6 @@ public class Reference extends Node implements Operation
 		}
 		else
 		{
-			Resolver resolver = getExpression().getConfig().internalResolver;
 			try
 			{
 				Object obj = resolver.resolve(name, resolveArguments());
@@ -98,9 +100,6 @@ public class Reference extends Node implements Operation
 	@Override
 	public Argument getArgument()
 	{
-		if (name == null)
-			System.out.println("Implizite Konvertierung von Array.");
-		
 		return resolve(false);
 	}
 }
