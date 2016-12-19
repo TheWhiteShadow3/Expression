@@ -168,7 +168,7 @@ public class ExpressionParser
 						argNodes[i - argStart] = args.get(i);
 						args.remove(i);
 					}
-					args.add(new Reference(exp, braceStart, argNodes));
+					args.add(new ListenWrapper(exp, braceStart, argNodes));
 				}
 				else
 				{	// Array-Index
@@ -339,7 +339,9 @@ public class ExpressionParser
 			if (left instanceof Operation || right instanceof Operation)
 				args.set(index-1, new InfixOperation(left, op, right));
 			else
+			{
 				args.set(index-1, Symbols.resolveTwoArgs(op, left, right) );
+			}
 			
 			args.remove(index+1);
 			args.remove(index);
