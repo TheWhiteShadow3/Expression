@@ -325,10 +325,10 @@ class Symbols
 		{
 			InfixOperation op = (InfixOperation) left;
 			Node[] nodes = left.getChildren();
-			Argument obj = nodes[0].getArgument();
 
 			if (op.getSymbol().getOperator() == Operator.INDEX)
 			{
+				Argument obj = nodes[0].getArgument();
 				Object collection = ((ObjectArgument) obj).asObject();
 
 				if (collection.getClass().isArray())
@@ -439,8 +439,9 @@ class Symbols
 			Config config = recieverNode.getExpression().getConfig();
 			Object result = config.invoke(reciever, name, args);
 			if (result instanceof Operation)
-				result = ((Operation) result).resolve();
-			return (Node) Config.wrap(recieverNode, result, false);
+				return (Node) ((Operation) result).resolve();
+			else
+				return (Node) Config.wrap(recieverNode, result, false);
 		}
 		catch (NoSuchFieldException e)
 		{
