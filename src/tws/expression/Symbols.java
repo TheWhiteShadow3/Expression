@@ -272,6 +272,11 @@ class Symbols
 			return collator.compare(ls, rs);
 		}
 		
+		if (Comparable.class.isAssignableFrom(left.getType()))
+		{
+			return ((Comparable) left.asObject()).compareTo(right.asObject());
+		}
+		
 		throw new EvaluationException(node, "Invalid Type for relational Operation.");
 	}
 
