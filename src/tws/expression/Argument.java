@@ -9,7 +9,7 @@ import java.util.List;
  * Wenn der Datentyp nicht konvertiert werden kann, wird eine {@link EvaluationException} geworfen.
  * @author TheWhiteShadow
  */
-public interface Argument
+public interface Argument extends INode
 {
 	/**
 	 * Gibt den Typ des Arguments zurück.

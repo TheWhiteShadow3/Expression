@@ -17,7 +17,7 @@ public class BooleanArgument extends Node implements Argument
 		this.value = value;
 	}
 	
-	BooleanArgument(Node parent, boolean value)
+	BooleanArgument(INode parent, boolean value)
 	{
 		super(parent);
 		this.value = value;

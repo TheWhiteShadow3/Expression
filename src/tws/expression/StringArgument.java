@@ -19,14 +19,14 @@ public class StringArgument extends Node implements Argument
 		this.value = value;
 	}
 	
-	StringArgument(Node initiator, String value)
+	StringArgument(INode initiator, String value)
 	{
 		super(initiator);
 		if (value == null) throw new NullPointerException("string is null");
 		this.value = value;
 	}
 
-	StringArgument(Node initiator, char c)
+	StringArgument(INode initiator, char c)
 	{
 		super(initiator);
 		this.value = String.valueOf(c);

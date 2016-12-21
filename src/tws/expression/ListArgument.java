@@ -1,6 +1,7 @@
 package tws.expression;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -10,30 +11,27 @@ import java.util.List;
  */
 public class ListArgument extends Node implements Argument
 {
-	private Argument[] arguments;
+	private List<INode> argNodes;
+	boolean resolved;
 	
-	ListArgument(Node parent, Argument[] arguments)
+	ListArgument(INode parent, Argument[] arguments)
 	{
 		super(parent);
-		this.arguments = arguments;
+		this.argNodes = (List) Arrays.asList(arguments);
 	}
 	
-//	ListArgument(Node parent, List<?> list)
-//	{
-//		super(parent);
-//		this.arguments = new ArrayList<Argument>(list.size());
-//		for(int i = 0; i < list.size(); i++)
-//		{
-//			arguments.add( Config.wrap(this, list.get(i), false) );
-//		}
-//	}
+	ListArgument(Expression exp, int sourcePos, INode[] argNodes)
+	{
+		super(exp, sourcePos);
+		this.argNodes = Arrays.asList(argNodes);
+	}
 	
 	@Override
 	public Argument getArgument()
 	{
 		return this;
 	}
-	
+
 	@Override
 	public Class<?> getType() { return List.class; }
 	@Override
@@ -80,22 +78,32 @@ public class ListArgument extends Node implements Argument
 	@Override
 	public List<Object> asList()
 	{
-		List<Object> list = new ArrayList<Object>(arguments.length);
-		for(int i = 0, n = arguments.length; i < n; i++)
+		List<Argument> args = getValues();
+		
+		List<Object> list = new ArrayList<Object>(size());
+		for(int i = 0, n = size(); i < n; i++)
 		{
-			list.add(arguments[i].asObject());
+			list.add(args.get(i).asObject());
 		}
 		return list;
 	}
 	
 	public int size()
 	{
-		return arguments.length;
+		return argNodes.size();
 	}
 	
-	public Argument[] getValues()
+	public List<Argument> getValues()
 	{
-		return arguments;
+		if (!resolved)
+		{
+			for(int i = 0; i < size(); i++)
+			{
+				argNodes.set(i, (INode) argNodes.get(i).getArgument());
+			}
+			resolved = true;
+		}
+		return (List) argNodes;
 	}
 	
 	@Override

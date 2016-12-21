@@ -8,7 +8,7 @@ import java.util.Map;
 
 class Symbols
 {
-	static Node resolveTwoArgs(OperationNode op, Node left, Node right)
+	static Argument resolveTwoArgs(OperationNode op, INode left, INode right)
 	{
 		switch(op.getOperator())
 		{
@@ -41,7 +41,7 @@ class Symbols
 		}
 	}
 
-	static Node resolveOneArg(OperationNode op, Node node)
+	static Argument resolveOneArg(OperationNode op, INode node)
 	{
 		switch(op.getOperator())
 		{
@@ -53,7 +53,7 @@ class Symbols
 		}
 	}
 
-	private static Node add(Node node, Argument left, Argument right)
+	private static Argument add(INode node, Argument left, Argument right)
 	{
 		if (left.getType() == String.class || right.getType() == String.class ||
 			left.getType() == Character.class || right.getType() == Character.class)
@@ -80,7 +80,7 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: ADD");
 	}
 
-	private static Node sub(Node node, Argument left, Argument right)
+	private static Argument sub(INode node, Argument left, Argument right)
 	{
 		if (left.getType() == double.class || right.getType() == double.class)
 		{
@@ -99,7 +99,7 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: SUB");
 	}
 	
-	private static Node mul(Node node, Argument left, Argument right)
+	private static Argument mul(INode node, Argument left, Argument right)
 	{
 		if (left.getType() == double.class || right.getType() == double.class)
 		{
@@ -120,7 +120,7 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: MUL");
 	}
 	
-	private static Node div(Node node, Argument left, Argument right)
+	private static Argument div(INode node, Argument left, Argument right)
 	{
 		if (left.getType() == double.class || right.getType() == double.class)
 		{
@@ -141,7 +141,7 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: DIV");
 	}
 
-	private static Node mod(Node node, Argument left, Argument right)
+	private static Argument mod(INode node, Argument left, Argument right)
 	{
 		if (left.getType() == double.class || right.getType() == double.class)
 		{
@@ -160,7 +160,7 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: DIV");
 	}
 
-	private static Node shiftLeft(Node node, Argument left, Argument right)
+	private static Argument shiftLeft(INode node, Argument left, Argument right)
 	{
 		if (left.isNumber() && right.isNumber())
 		{
@@ -172,7 +172,7 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: SHIFT_LEFT");
 	}
 
-	private static Node shiftRight(Node node, Argument left, Argument right)
+	private static Argument shiftRight(INode node, Argument left, Argument right)
 	{
 		if (left.isNumber() && right.isNumber())
 		{
@@ -184,7 +184,7 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: SHIFT_RIGHT");
 	}
 	
-	private static Node ushiftRight(Node node, Argument left, Argument right)
+	private static Argument ushiftRight(INode node, Argument left, Argument right)
 	{
 		if (left.isNumber() && right.isNumber())
 		{
@@ -196,37 +196,37 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for Operation: USHIFT_RIGHT");
 	}
 	
-	private static Node equal(Node node, Argument left, Argument right)
+	private static Argument equal(INode node, Argument left, Argument right)
 	{
 		return new BooleanArgument(node, compareBoolean(node, left, right));
 	}
 	
-	private static Node notEqual(Node node, Argument left, Argument right)
+	private static Argument notEqual(INode node, Argument left, Argument right)
 	{
 		return new BooleanArgument(node, !compareBoolean(node, left, right));
 	}
 
-	private static Node less(Node node, Argument left, Argument right)
+	private static Argument less(INode node, Argument left, Argument right)
 	{
 		return new BooleanArgument(node, compareNumeric(node, left, right) < 0);
 	}
 
-	private static Node lessEqual(Node node, Argument left, Argument right)
+	private static Argument lessEqual(INode node, Argument left, Argument right)
 	{
 		return new BooleanArgument(node, compareNumeric(node, left, right) <= 0);
 	}
 
-	private static Node greater(Node node, Argument left, Argument right)
+	private static Argument greater(INode node, Argument left, Argument right)
 	{
 		return new BooleanArgument(node, compareNumeric(node, left, right) > 0);
 	}
 
-	private static Node greaterEqual(Node node, Argument left, Argument right)
+	private static Argument greaterEqual(INode node, Argument left, Argument right)
 	{
 		return new BooleanArgument(node, compareNumeric(node, left, right) >= 0);
 	}
 	
-	private static boolean compareBoolean(Node node, Argument left, Argument right)
+	private static boolean compareBoolean(INode node, Argument left, Argument right)
 	{
 		if (left.isNull()) return right.isNull();
 		
@@ -243,7 +243,7 @@ class Symbols
 		return compareNumeric(node, left, right) == 0;
 	}
 	
-	static int compareNumeric(Node node, Argument left, Argument right)
+	static int compareNumeric(INode node, Argument left, Argument right)
 	{
 		if (left.getType() == double.class || right.getType() == double.class)
 		{
@@ -275,22 +275,22 @@ class Symbols
 		throw new EvaluationException(node, "Invalid Type for relational Operation.");
 	}
 
-	private static Node and(Node node, Node left, Node right)
+	private static Argument and(INode node, INode left, INode right)
 	{
 		return new BooleanArgument(node, left.getArgument().asBoolean() && right.getArgument().asBoolean());
 	}
 
-	private static Node or(Node node, Node left, Node right)
+	private static Argument or(INode node, INode left, INode right)
 	{
 		return new BooleanArgument(node, left.getArgument().asBoolean() || right.getArgument().asBoolean());
 	}
 
-	private static Node exor(Node node, Node left, Node right)
+	private static Argument exor(INode node, INode left, INode right)
 	{
 		return new BooleanArgument(node, left.getArgument().asBoolean() ^ right.getArgument().asBoolean());
 	}
 	
-	private static Node neg(Node node, Argument arg)
+	private static Argument neg(INode node, Argument arg)
 	{
 		if (arg.getType() == double.class)
 		{
@@ -305,32 +305,33 @@ class Symbols
 		throw new EvaluationException("Invalid Type for Operation: NEG");
 	}
 	
-	private static Node not(Node node, Argument arg)
+	private static Argument not(INode node, Argument arg)
 	{
 		return new BooleanArgument(node, !arg.asBoolean());
 	}
 
-	private static Node assign(Node left, Node right)
+	private static Argument assign(INode left, INode right)
 	{
-		Object value = right.getObject();
+		Argument arg = right.getArgument();
+		Object value = (arg instanceof Invokable) ? arg : arg.asObject();
 		
 		if (left instanceof Reference)
 		{
 			String var = ((Reference) left).getName();
 
 			left.getExpression().getConfig().assign(var, value);
-			return right;
+			return arg;
 		}
 		else if (left instanceof InfixOperation)
 		{
 			InfixOperation op = (InfixOperation) left;
-			Node[] nodes = left.getChildren();
+			INode[] nodes = left.getChildren();
 
 			if (op.getSymbol().getOperator() == Operator.INDEX)
 			{
 				Argument obj = nodes[0].getArgument();
-				Object collection = ((ObjectArgument) obj).asObject();
-
+				Object collection = obj.asObject();
+				
 				if (collection.getClass().isArray())
 				{
 					int index = getIndex(nodes[1], Array.getLength(collection));
@@ -364,19 +365,19 @@ class Symbols
 				else
 					throw new EvaluationException(left, "Invalid list type " + collection.getClass().getName() + ".");
 				
-				return right;
+				return arg;
 			}
 			else if (op.getSymbol().getOperator() == Operator.DOT)
 			{
-				((Reference) nodes[1]).setArguments(new Node[] {right});
+				((Reference) nodes[1]).setArguments(new INode[] {right});
 				dot(nodes[0], nodes[1]);
-				return right;
+				return arg;
 			}
 		}
 		throw new EvaluationException(left, "Invalid Type for Operation: ASSIGN");
 	}
 
-	private static Node index(Node left, Node right)
+	private static Argument index(INode left, INode right)
 	{
 		try
 		{
@@ -407,9 +408,7 @@ class Symbols
 			else
 				throw new EvaluationException(left, "Invalid list type " + collection.getClass().getName() + ".");
 			
-			return (Node) Config.wrap(left, result, false);
-			
-//			throw new EvaluationException(left, "Invalid Type for Operation: INDEX");
+			return Config.wrap(left, result, false);
 		}
 		catch(IndexOutOfBoundsException e)
 		{
@@ -417,7 +416,7 @@ class Symbols
 		}
 	}
 	
-	private static int getIndex(Node indexNode, int arraySize)
+	private static int getIndex(INode indexNode, int arraySize)
 	{
 		int index = (int) indexNode.getArgument().asLong();
 		if (index < 0)
@@ -425,7 +424,7 @@ class Symbols
 		return index;
 	}
 	
-	private static Node dot(Node recieverNode, Node call)
+	private static Argument dot(INode recieverNode, INode call)
 	{
 		Argument reciever = recieverNode.getArgument();
 		if (!(call instanceof Reference))
@@ -439,9 +438,9 @@ class Symbols
 			Config config = recieverNode.getExpression().getConfig();
 			Object result = config.invoke(reciever, name, args);
 			if (result instanceof Operation)
-				return (Node) ((Operation) result).resolve();
+				return ((Operation) result).resolve();
 			else
-				return (Node) Config.wrap(recieverNode, result, false);
+				return Config.wrap(recieverNode, result, false);
 		}
 		catch (NoSuchFieldException e)
 		{

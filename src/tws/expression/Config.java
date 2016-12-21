@@ -272,7 +272,7 @@ public final class Config
 			throw new ClassCastException("Can not cast boolean to number."); 
 	}
 	
-	static Argument wrap(Node parent, Object obj, boolean recursive)
+	static Argument wrap(INode parent, Object obj, boolean recursive)
 	{
 		if (obj == null) return new NullArgument(parent);
 		if (obj instanceof Argument) return (Argument) obj;
@@ -300,7 +300,7 @@ public final class Config
 		return new ObjectArgument(parent, obj);
 	}
 	
-	static Argument[] asArgumentList(Node parent, Object obj)
+	static Argument[] asArgumentList(INode parent, Object obj)
 	{
 		if (obj == null)
 		{

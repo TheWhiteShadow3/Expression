@@ -8,9 +8,9 @@ package tws.expression;
 public class PrefixOperation extends Node implements Operation
 {
 	private OperationNode symbol;
-	private Node arg;
+	private INode arg;
 	
-	PrefixOperation(OperationNode symbol, Node arg)
+	PrefixOperation(OperationNode symbol, INode arg)
 	{
 		super(symbol);
 		this.symbol = symbol;
@@ -25,13 +25,13 @@ public class PrefixOperation extends Node implements Operation
 	@Override
 	public Argument resolve() throws EvaluationException
 	{
-		return (Argument) Symbols.resolveOneArg(symbol, arg);
+		return Symbols.resolveOneArg(symbol, arg);
 	}
 	
 	@Override
-	public Node[] getChildren()
+	public INode[] getChildren()
 	{
-		return new Node[] {arg};
+		return new INode[] {arg};
 	}
 
 	@Override

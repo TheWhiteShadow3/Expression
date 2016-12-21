@@ -19,10 +19,10 @@ public class ObjectArgument extends Node implements Argument
 		this.obj = obj;
 	}
 	
-	ObjectArgument(Node parent, Object obj)
+	ObjectArgument(INode parent, Object obj)
 	{
 		super(parent);
-		if (obj == null) throw new NullPointerException();
+		assert obj != null;
 		this.obj = obj;
 	}
 

@@ -17,7 +17,7 @@ public class FloatArgument extends Node implements Argument
 		this.value = value;
 	}
 	
-	FloatArgument(Node parent, double value)
+	FloatArgument(INode parent, double value)
 	{
 		super(parent);
 		this.value = value;

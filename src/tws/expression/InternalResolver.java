@@ -77,9 +77,12 @@ class InternalResolver implements Resolver
 				if ("PI".equals(name)) return PI;
 				if ("E".equals(name)) return E;
 			}
-			if (config.useVariables && variables != null && variables.containsKey(name))
+			synchronized (this)
 			{
-				return variables.get(name);
+				if (config.useVariables && variables != null && variables.containsKey(name))
+				{
+					return variables.get(name);
+				}
 			}
 		}
 		Resolver r = config.resolver;
@@ -95,7 +98,7 @@ class InternalResolver implements Resolver
 			// Vermeide unnötiges ein-/auspacken bei ListArgument
 			if (args[0] instanceof ListArgument)
 			{
-				args = ((ListArgument) args[0]).getValues();
+				return ((ListArgument) args[0]).getValues();
 			}
 			else if (args[0] instanceof ObjectArgument)
 			{
@@ -116,9 +119,9 @@ class InternalResolver implements Resolver
 	{
 		if (args.length == 0) throw new EvaluationException("Invalid number of arguments.");
 		
-		Node parent = null;
-		if (args[0] instanceof Node)
-			parent = ((Node) args[0]).getParent();
+		INode parent = null;
+		if (args[0] instanceof INode)
+			parent = ((INode) args[0]).getParent();
 		
 		Argument[] array = toList(args).toArray(args);
 		
@@ -140,7 +143,7 @@ class InternalResolver implements Resolver
 		Argument min = list.get(0);
 		for(int i = 1; i < list.size(); i++)
 		{
-			if (Symbols.compareNumeric((Node) min, min, list.get(i)) == 1) min = list.get(i);
+			if (Symbols.compareNumeric(min, min, list.get(i)) == 1) min = list.get(i);
 		}
 		return min;
 	}
@@ -153,7 +156,7 @@ class InternalResolver implements Resolver
 		Argument max = list.get(0);
 		for(int i = 1; i < list.size(); i++)
 		{
-			if (Symbols.compareNumeric((Node) max, max, list.get(i)) == -1) max = list.get(i);
+			if (Symbols.compareNumeric(max, max, list.get(i)) == -1) max = list.get(i);
 		}
 		return max;
 	}
@@ -169,8 +172,11 @@ class InternalResolver implements Resolver
 	{
 		if (config.useVariables)
 		{
-			if (variables == null) variables = new HashMap<String, Object>();
-			variables.put(name, value);
+			synchronized (this)
+			{
+				if (variables == null) variables = new HashMap<String, Object>();
+				variables.put(name, value);
+			}
 		}
 		else
 		{
@@ -193,11 +199,7 @@ class InternalResolver implements Resolver
 		@Override
 		public int compare(Argument a1, Argument a2)
 		{
-			Node node = null;
-			if (a1 instanceof Node)
-				node = (Node) a1;
-			
-			return Symbols.compareNumeric(node, a1, a2);
+			return Symbols.compareNumeric(a1, a1, a2);
 		}
 	}
 }

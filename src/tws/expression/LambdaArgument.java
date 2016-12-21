@@ -10,15 +10,21 @@ import java.util.Map;
  * Alle as... Methoden werfen eine <code>UnsupportedOperationException.</code>
  * @author TheWhiteShadow
  */
-public class LambdaArgument extends Node implements Argument
+public class LambdaArgument extends Node implements Argument, Invokable
 {
 	private Operation op;
 	private String[] names = new String[0];
 	private LambdaResolver resolver;
 	
-	LambdaArgument(Expression exp, int sourcePos)
+	LambdaArgument(Expression exp, int sourcePos, Resolver parentResolver)
 	{
 		super(exp, sourcePos);
+		this.resolver = new LambdaResolver(parentResolver);
+	}
+
+	public Resolver getResolver()
+	{
+		return resolver;
 	}
 
 	public String[] getParams()
@@ -31,14 +37,13 @@ public class LambdaArgument extends Node implements Argument
 		this.names = names;
 	}
 
-	void setOperation(Operation op, LambdaResolver resolver)
+	void setOperation(Operation op)
 	{
 		this.op = op;
-		this.resolver = resolver;
 	}
 	
 	@Override
-	public Class<?> getType() { return LambdaArgument.class; }
+	public Class<?> getType() { return Invokable.class; }
 	@Override
 	public boolean isNumber() { return false; }
 	@Override
@@ -70,12 +75,6 @@ public class LambdaArgument extends Node implements Argument
 	}
 
 	@Override
-	Object getObject()
-	{
-		return this;
-	}
-
-	@Override
 	public String toString()
 	{
 		if (op == null) return "{}";
@@ -83,11 +82,13 @@ public class LambdaArgument extends Node implements Argument
 		return '{' + op.toString() + '}';
 	}
 	
+	@Override
 	public Argument resolve()
 	{
 		return with((Object[]) null).resolve();
 	}
 
+	@Override
 	public Operation with(final Object... args)
 	{
 		return new Operation()

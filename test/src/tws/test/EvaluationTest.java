@@ -47,10 +47,12 @@ public class EvaluationTest
 	/** Wert den der Resolver bei 'carray' auflösen soll. */
 	static char[] carray = "Rose".toCharArray();
 	
+	static final boolean DEBUG = false;
+	
 	@BeforeClass
 	public static void setup()
 	{
-		Expression.DEFAULT_CONFIG.debug = true;
+		Expression.DEFAULT_CONFIG.debug = DEBUG;
 		Expression.DEFAULT_CONFIG.resolver = new Resolver()
 		{
 			@Override
@@ -331,6 +333,7 @@ public class EvaluationTest
 		assertTrue(op instanceof WrapperOperation);
 		
 		Config config = new Config();
+		config.debug = DEBUG;
 		config.useVariables = true;
 		int[] arr = new int[] {1, 2};
 		config.assign("arr", arr);
@@ -349,7 +352,7 @@ public class EvaluationTest
 	{
 		System.out.println("Boolean Verhalten");
 		Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		config.booleanBehavor = Config.BooleanBehavor.ONLY_BOOLEAN;
 		
@@ -447,7 +450,7 @@ public class EvaluationTest
 	{
 		System.out.println("Ausdrücke mit NULL");
 		Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		Object result;
 		long l;
 		boolean b;
@@ -506,7 +509,7 @@ public class EvaluationTest
 	{
 		System.out.println("Objekte");
 		Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		Object result;
 		
@@ -522,7 +525,7 @@ public class EvaluationTest
 	{
 		System.out.println("Arrays");
 		Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		Object result;
 		List<?> list;
@@ -566,14 +569,20 @@ public class EvaluationTest
 		}
 		catch(EvaluationException e) { handleException(e); }
 		
-		Operation op = new Expression("[0, 1][3]", config).compile();
 		try
 		{
-			op.resolve();
+			result = new Expression("[0, 1][3]", config).compile();
 			fail("Fail: " + result);
 		}
 		catch(EvaluationException e) { handleException(e); }
-
+		
+		Operation op = new Expression("[0, 1][array[0][2]]", config).compile();
+		try
+		{
+			result = op.resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
 	}
 	
 	@Test
@@ -581,7 +590,7 @@ public class EvaluationTest
 	{
 		System.out.println("Assignment");
 		Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		config.useVariables = true;
 		
@@ -605,18 +614,21 @@ public class EvaluationTest
 		
 		b = new Expression("abc := true", config).resolve().asBoolean();
 		assertTrue(b);
+		assertTrue((Boolean) config.getVariable("abc"));
 		
 		b = new Expression("abc", config).resolve().asBoolean();
 		assertTrue(b);
 		
 		b = new Expression("xyz := abc", config).resolve().asBoolean();
 		assertTrue(b);
+		assertTrue((Boolean) config.getVariable("xyz"));
 		
 		result = new Expression("abc := [[1 ,2, 3]]", config).resolve().asObject();
 		assertEquals(2L, ((List<List<?>>) result).get(0).get(1));
 		
 		b = new Expression("abc[0][1] := xyz", config).resolve().asBoolean();
 		assertTrue(b);
+		assertTrue( (Boolean) ((List<List<?>>) config.getVariable("abc")).get(0).get(1) );
 		
 		b = new Expression("abc[0][1]", config).resolve().asBoolean();
 		assertTrue(b);
@@ -635,7 +647,7 @@ public class EvaluationTest
 	{
 		System.out.println("Invocation");
 		Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		config.useVariables = true;
 		Object result;
 		
@@ -714,7 +726,7 @@ public class EvaluationTest
 	{
 		System.out.println("Threading");
 		final Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		config.invoker = new DefaultInvoker();
 		
@@ -747,7 +759,7 @@ public class EvaluationTest
 	{
 		System.out.println("Lambda");
 		final Config config = new Config();
-		config.debug = true;
+		config.debug = DEBUG;
 		config.resolver = Expression.DEFAULT_CONFIG.resolver;
 		config.invoker = new DefaultInvoker();
 		config.useVariables = true;

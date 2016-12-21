@@ -3,8 +3,6 @@ package tws.expression;
 import java.util.ArrayList;
 import java.util.List;
 
-import tws.expression.LambdaArgument.LambdaResolver;
-
 
 public class ExpressionParser
 {
@@ -13,7 +11,7 @@ public class ExpressionParser
 	int start;
 	private int pos;
 	private Expression exp;
-	private List<Node> args;
+	private List<INode> args;
 	private Resolver resolver;
 	
 	public ExpressionParser() {}
@@ -25,11 +23,11 @@ public class ExpressionParser
 		this.lenght = string.length();
 		this.start = 0;
 		this.pos = 0;
-		this.args = new ArrayList<Node>(12);
+		this.args = new ArrayList<INode>(12);
 		this.resolver = exp.getConfig().internalResolver;
 		
 		if (exp.getConfig().debug) System.out.println('"' + string + '"');
-		Node node = addNextNode();
+		INode node = addNextNode();
 		if (pos < lenght)
 		{
 			throwException("Trash after Expression.", null);
@@ -39,7 +37,7 @@ public class ExpressionParser
 		return nodeToOperation(node);
 	}
 	
-	private Operation nodeToOperation(Node node)
+	private Operation nodeToOperation(INode node)
 	{
 		if (node instanceof Operation)
 			return (Operation) node;
@@ -56,7 +54,7 @@ public class ExpressionParser
 		this.resolver = null;
 	}
 	
-	private Node addNextNode()
+	private INode addNextNode()
 	{
 		int offset = args.size();
 		
@@ -105,7 +103,7 @@ public class ExpressionParser
 			if (c == '(')
 			{
 				pos++;
-				Node node = args.isEmpty() ? null : args.get(args.size()-1);
+				INode node = args.isEmpty() ? null : args.get(args.size()-1);
 				if (opCount == 0)
 				{
 					if (node instanceof Reference)
@@ -114,7 +112,7 @@ public class ExpressionParser
 						int argStart = args.size();
 						addListNodes(')');
 						
-						Node[] argNodes = new Node[args.size()- argStart];
+						INode[] argNodes = new INode[args.size()- argStart];
 						for(int i = args.size()-1; i >= argStart; i--)
 						{
 							argNodes[i - argStart] = args.get(i);
@@ -162,13 +160,13 @@ public class ExpressionParser
 					int argStart = args.size();
 					addListNodes(']');
 					opCount = 0;
-					Node[] argNodes = new Node[args.size()- argStart];
+					INode[] argNodes = new INode[args.size()- argStart];
 					for(int i = args.size()-1; i >= argStart; i--)
 					{
 						argNodes[i - argStart] = args.get(i);
 						args.remove(i);
 					}
-					args.add(new ListenWrapper(exp, braceStart, argNodes));
+					args.add(new ListArgument(exp, braceStart, argNodes));
 				}
 				else
 				{	// Array-Index
@@ -181,26 +179,25 @@ public class ExpressionParser
 			}
 			else if (c == '{')
 			{	// Lambda
-				LambdaArgument lam = new LambdaArgument(exp, pos);
+				LambdaArgument lam = new LambdaArgument(exp, pos, resolver);
 				args.add(lam);
 				
-				LambdaResolver lResolver = new LambdaResolver(resolver); 
-				this.resolver = lResolver;
+				Resolver oldResolver = this.resolver;
+				this.resolver = lam.getResolver();
 				
 				pos++;
 				int lStart = args.size();
 				addNextNode();
+				if (lenght <= pos || string.charAt(pos++) != '}') throwException("Missing token '}'", null);
 				opCount = 0;
 				
-				if (lenght <= pos || string.charAt(pos++) != '}') throwException("Missing token '}'", null);
-				
-				lam.setOperation(nodeToOperation(resolveStatement(lStart)), lResolver);
+				lam.setOperation(nodeToOperation(resolveStatement(lStart)));
 				args.remove(lStart);
-				this.resolver = lResolver.parent;
+				this.resolver = oldResolver;
 			}
 			else if (c == ',' || c == ')' || c == '}' || c == ']')
 			{
-				Node last = args.isEmpty() ? null : args.get(args.size()-1);
+				INode last = args.isEmpty() ? null : args.get(args.size()-1);
 				if (last instanceof Reference) return null;
 				
 				if (opCount > 0) throwException("Missing operand.", null);
@@ -274,7 +271,7 @@ public class ExpressionParser
 		return resolveStatement(offset);
 	}
 	
-	private Node resolveStatement(int offset)
+	private INode resolveStatement(int offset)
 	{
 		if (exp.getConfig().debug) System.out.print(args.subList(offset, args.size()));
 		while(args.size() > offset+1)
@@ -315,7 +312,7 @@ public class ExpressionParser
 		OperationNode op = (OperationNode) args.get(index);
 		if (op.isPrefixOperation())
 		{
-			Node arg = args.get(index+1);
+			INode arg = args.get(index+1);
 			if (op.getSourcePos() < arg.getSourcePos()-1)
 				throw new EvaluationException(arg, "Prefix-Operator must not seperate from operand.");
 			
@@ -328,8 +325,8 @@ public class ExpressionParser
 		}
 		else if (op.isInfixOperation())
 		{
-			Node left = args.get(index-1);
-			Node right = args.get(index+1);
+			INode left = args.get(index-1);
+			INode right = args.get(index+1);
 			if (op.getOperator() == Operator.DOT || op.getOperator() == Operator.INDEX)
 			{
 				if (isWhiteSpace(string.charAt(op.getSourcePos()-1)))
@@ -339,9 +336,7 @@ public class ExpressionParser
 			if (left instanceof Operation || right instanceof Operation)
 				args.set(index-1, new InfixOperation(left, op, right));
 			else
-			{
 				args.set(index-1, Symbols.resolveTwoArgs(op, left, right) );
-			}
 			
 			args.remove(index+1);
 			args.remove(index);

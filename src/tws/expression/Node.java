@@ -8,17 +8,15 @@ import java.util.Arrays;
  * @see Argument
  * @see Operation
  */
-public abstract class Node
+abstract class Node implements INode
 {
-	protected static final Node[] EMPTY = new Node[0];
-	
 	private Expression exp;
-	private Node parent;
+	private INode parent;
 	private int sourcePos;
 	
-	Node(Node parent)
+	Node(INode parent)
 	{
-		if (parent == null) throw new NullPointerException("parent is null");
+		assert parent != null;
 		
 		this.parent = parent;
 		this.exp = parent.getExpression();
@@ -27,6 +25,8 @@ public abstract class Node
 	
 	Node(Expression exp, int sourcePos)
 	{
+		assert exp != null;
+
 		this.exp = exp;
 		this.sourcePos = sourcePos;
 	}
@@ -36,7 +36,8 @@ public abstract class Node
 	 * @return den Elternknoten.
 	 * @see #getChildren()
 	 */
-	public Node getParent()
+	@Override
+	public INode getParent()
 	{
 		return parent;
 	}
@@ -45,6 +46,7 @@ public abstract class Node
 	 * Gibt die Expression des Knoten zurück.
 	 * @return die Expression.
 	 */
+	@Override
 	public Expression getExpression()
 	{
 		return exp;
@@ -54,6 +56,7 @@ public abstract class Node
 	 * Gibt die Position des Knoten innerhalb der Expression zurück.
 	 * @return Position innerhalb der Expression.
 	 */
+	@Override
 	public int getSourcePos()
 	{
 		return sourcePos;
@@ -64,7 +67,8 @@ public abstract class Node
 	 * @return die Kindknoten.
 	 * @see #getParent()
 	 */
-	public Node[] getChildren()
+	@Override
+	public INode[] getChildren()
 	{
 		return EMPTY;
 	}
@@ -73,12 +77,8 @@ public abstract class Node
 	 * Gibt das zum Knoten gehörende Argument zurück. Wenn der Knoten eine Operation enthält, wird diese Aufgelöst.
 	 * @return Das Argument des Knoten.
 	 */
+	@Override
 	public abstract Argument getArgument();
-	
-	Object getObject()
-	{
-		return getArgument().asObject();
-	}
 
 	@Override
 	public String toString()

@@ -25,8 +25,8 @@ public class DefaultInvoker implements Invoker
 		if (clazz.isPrimitive())
 			clazz = reciever.asObject().getClass();
 		
-		Object obj = ((Node) reciever).getObject();
-		boolean debug = reciever instanceof Node && ((Node) reciever).getExpression().getConfig().debug;
+		Object obj = (reciever instanceof Invokable) ? reciever : reciever.asObject();
+		boolean debug = reciever instanceof INode && reciever.getExpression().getConfig().debug;
 		// Statischer Call
 		if (obj instanceof Class)
 		{
@@ -214,20 +214,20 @@ public class DefaultInvoker implements Invoker
 			return array;
 		}
 		
-		if (targetType.isInterface() && arg instanceof LambdaArgument)
+		if (targetType.isInterface() && arg instanceof Invokable)
 		{
-			final LambdaArgument lambda = (LambdaArgument) arg;
+			final Invokable inkokable = (Invokable) arg;
 			Object proxy = Proxy.newProxyInstance(targetType.getClassLoader(), new Class[] {targetType}, new InvocationHandler()
 			{
 				@Override
 				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
 				{
-					return convertArgument(method.getReturnType(), lambda.with(args).resolve());
+					return convertArgument(method.getReturnType(), inkokable.with(args).resolve());
 				}
 			});
 			return proxy;
 		}
 		
-		return ((Node) arg).getObject();
+		return arg.asObject();
 	}
 }

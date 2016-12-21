@@ -15,7 +15,7 @@ public class NullArgument extends Node implements Argument
 		super(exp, sourcePos);
 	}
 	
-	NullArgument(Node parent)
+	NullArgument(INode parent)
 	{
 		super(parent);
 	}

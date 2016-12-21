@@ -18,7 +18,7 @@ public class IntegerArgument extends Node implements Argument
 		this.value = value;
 	}
 	
-	IntegerArgument(Node parent, long value)
+	IntegerArgument(INode parent, long value)
 	{
 		super(parent);
 		this.value = value;

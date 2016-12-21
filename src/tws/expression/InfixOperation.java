@@ -8,10 +8,10 @@ package tws.expression;
 public class InfixOperation extends Node implements Operation
 {
 	private OperationNode symbol;
-	private Node left;
-	private Node right;
+	private INode left;
+	private INode right;
 	
-	InfixOperation(Node left, OperationNode symbol, Node right)
+	InfixOperation(INode left, OperationNode symbol, INode right)
 	{
 		super(symbol);
 		this.symbol = symbol;
@@ -27,13 +27,13 @@ public class InfixOperation extends Node implements Operation
 	@Override
 	public Argument resolve() throws EvaluationException
 	{
-		return Symbols.resolveTwoArgs(symbol, left, right).getArgument();
+		return Symbols.resolveTwoArgs(symbol, left, right);
 	}
 
 	@Override
-	public Node[] getChildren()
+	public INode[] getChildren()
 	{
-		return new Node[] {left, right};
+		return new INode[] {left, right};
 	}
 	
 	@Override

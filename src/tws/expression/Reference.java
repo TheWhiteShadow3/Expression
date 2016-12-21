@@ -9,37 +9,32 @@ import java.util.Arrays;
 public class Reference extends Node implements Operation
 {
 	private final String name;
-	private Node[] argNodes;
+	private INode[] argNodes;
 	private Resolver resolver;
 	
 	Reference(Expression exp, int sourcePos, String name, Resolver resolver)
 	{
 		super(exp, sourcePos);
+		assert name != null;
+		assert resolver != null;
 		this.name = name;
 		this.resolver = resolver;
 	}
 	
-	Reference(Expression exp, int sourcePos, Node[] argNodes)
-	{
-		super(exp, sourcePos);
-		this.name = null;
-		this.argNodes = argNodes;
-	}
-	
-	Reference(Node initiator, String name, Resolver resolver)
-	{
-		super(initiator);
-		this.name = name;
-		this.resolver = resolver;
-	}
+//	Reference(Node initiator, String name, Resolver resolver)
+//	{
+//		super(initiator);
+//		this.name = name;
+//		this.resolver = resolver;
+//	}
 
-	void setArguments(Node[] argNodes)
+	void setArguments(INode[] argNodes)
 	{
 		this.argNodes = argNodes;
 	}
 	
 	@Override
-	public Node[] getChildren()
+	public INode[] getChildren()
 	{
 		return argNodes;
 	}
@@ -67,30 +62,21 @@ public class Reference extends Node implements Operation
 	
 	protected Argument resolve(boolean recursive)
 	{
-		if (name == null)
+		try
 		{
-			return new ListArgument(this, resolveArguments());
-		}
-		else
-		{
-			try
-			{
-				Object obj = resolver.resolve(name, resolveArguments());
+			Object obj = resolver.resolve(name, resolveArguments());
 
-				return Config.wrap(this, obj, recursive);
-			}
-			catch(Exception e)
-			{
-				throw new EvaluationException(this, "Can not resolve " + name, e);
-			}
+			return Config.wrap(this, obj, recursive);
+		}
+		catch(Exception e)
+		{
+			throw new EvaluationException(this, "Can not resolve " + name, e);
 		}
 	}
 	
 	@Override
 	public String toString()
 	{
-		if (name == null) return Arrays.toString(argNodes);
-		
 		if (argNodes == null)
 			return '$' + name;
 		else

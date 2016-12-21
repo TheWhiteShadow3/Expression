@@ -21,7 +21,7 @@ public class EvaluationException extends RuntimeException
 		super(message, e);
 	}
 	
-	public EvaluationException(Node node, String message, Throwable cause)
+	public EvaluationException(INode node, String message, Throwable cause)
 	{
 		super(createMessage(node.getExpression().getSourceString(), node.getSourcePos(), message), cause);
 	}
@@ -31,7 +31,7 @@ public class EvaluationException extends RuntimeException
 		super(createMessage(sourceString, pos, message), cause);
 	}
 	
-	public EvaluationException(Node node, String message)
+	public EvaluationException(INode node, String message)
 	{
 		super(createMessage(node.getExpression().getSourceString(), node.getSourcePos(), message));
 	}
