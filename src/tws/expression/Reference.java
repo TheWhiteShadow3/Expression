@@ -1,91 +1,89 @@
 package tws.expression;
 
 import java.util.Arrays;
+import java.util.List;
 
-/**
- * Stellt eine Referenz auf ein Objekt da.
- * @author TheWhiteShadow
- */
-public class Reference extends Node implements Operation
+public class Reference extends Node implements Argument
 {
-	private final String name;
-	private INode[] argNodes;
-	private Resolver resolver;
-	
-	Reference(Expression exp, int sourcePos, String name, Resolver resolver)
+	private DynamicOperation obj;
+
+	Reference(Expression exp, int sourcePos, DynamicOperation obj)
 	{
 		super(exp, sourcePos);
-		assert name != null;
-		assert resolver != null;
-		this.name = name;
-		this.resolver = resolver;
+		assert obj != null;
+		this.obj = obj;
 	}
 	
-//	Reference(Node initiator, String name, Resolver resolver)
-//	{
-//		super(initiator);
-//		this.name = name;
-//		this.resolver = resolver;
-//	}
-
-	void setArguments(INode[] argNodes)
+	Reference(INode parent, DynamicOperation obj)
 	{
-		this.argNodes = argNodes;
-	}
-	
-	@Override
-	public INode[] getChildren()
-	{
-		return argNodes;
-	}
-	
-	public String getName()
-	{
-		return name;
-	}
-	
-	public Argument[] resolveArguments()
-	{
-		if (argNodes == null) return null;
-		
-		Argument[] args = new Argument[argNodes.length];
-		for(int i = 0; i < args.length; i++)
-			args[i] = argNodes[i].getArgument();
-		return args;
-	}
-	
-	@Override
-	public Argument resolve() throws EvaluationException
-	{
-		return resolve(true); 
-	}
-	
-	protected Argument resolve(boolean recursive)
-	{
-		try
-		{
-			Object obj = resolver.resolve(name, resolveArguments());
-
-			return Config.wrap(this, obj, recursive);
-		}
-		catch(Exception e)
-		{
-			throw new EvaluationException(this, "Can not resolve " + name, e);
-		}
-	}
-	
-	@Override
-	public String toString()
-	{
-		if (argNodes == null)
-			return '$' + name;
-		else
-			return '$' + name + Arrays.toString(argNodes);
+		super(parent);
+		assert obj != null;
+		this.obj = obj;
 	}
 	
 	@Override
 	public Argument getArgument()
 	{
-		return resolve(false);
+		return this;
+	}
+	
+	public DynamicOperation getOperation()
+	{
+		return obj;
+	}
+
+	@Override
+	public Class<?> getType() { return obj.getClass(); }
+	@Override
+	public boolean isNumber() { return false; }
+	@Override
+	public boolean isString() { return false; }
+	@Override
+	public boolean isNull() { return false; }
+	@Override
+	public boolean isBoolean() { return true; }
+	@Override
+	public boolean isObject() { return true; }
+	
+	@Override
+	public boolean asBoolean()
+	{
+		return getExpression().getConfig().isTrue(this);
+	}
+
+	@Override
+	public String asString()
+	{
+		throw new EvaluationException("Can not cast reference to String.");
+	}
+
+	@Override
+	public double asDouble()
+	{
+		return Double.NaN;
+	}
+
+	@Override
+	public long asLong()
+	{
+		throw new EvaluationException("Can not cast reference to long.");
+	}
+
+	@Override
+	public Object asObject()
+	{
+		return obj;
+	}
+
+	@Override
+	public List<?> asList()
+	{
+		return Arrays.asList(obj);
+	}
+
+	@Override
+	public String toString()
+	{
+		return '$' + obj.toString();
 	}
 }

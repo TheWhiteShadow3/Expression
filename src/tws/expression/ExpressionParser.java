@@ -106,10 +106,12 @@ public class ExpressionParser
 				INode node = args.isEmpty() ? null : args.get(args.size()-1);
 				if (opCount == 0)
 				{
-					if (node instanceof Reference)
-					{	// Funktion
-						Reference ref = (Reference) node;
+					if (node instanceof DynamicOperation)
+					{
 						int argStart = args.size();
+						FunctionCall ref = new FunctionCall(exp, node.getSourcePos(), (DynamicOperation) node);
+						((Node) node).setParent(ref);
+						args.set(argStart-1, ref);
 						addListNodes(')');
 						
 						INode[] argNodes = new INode[args.size()- argStart];
@@ -120,12 +122,33 @@ public class ExpressionParser
 						}
 						ref.setArguments(argNodes);
 					}
+					
+//					if (node instanceof LambdaArgument)
+//					{	// Lambda-Funktion
+//						LambdaArgument lam = (LambdaArgument) node;
+//						node = new Reference(node, null, lam.getResolver());
+//						args.set(args.size()-1, node);
+//					}
+//					if (node instanceof Reference)
+//					{	// Funktion
+//						Reference ref = (Reference) node;
+//						int argStart = args.size();
+//						addListNodes(')');
+//						
+//						INode[] argNodes = new INode[args.size()- argStart];
+//						for(int i = args.size()-1; i >= argStart; i--)
+//						{
+//							argNodes[i - argStart] = args.get(i);
+//							args.remove(i);
+//						}
+//						ref.setArguments(argNodes);
+//					}
 					else
 						throw new EvaluationException(node, "Invalid identifier.");
 				}
-				else if (node instanceof LambdaArgument)
+				else if (node instanceof LambdaOperation)
 				{	// Lambda
-					LambdaArgument lam = (LambdaArgument) node;
+					LambdaOperation lam = (LambdaOperation) node;
 					int argStart = args.size();
 					addListNodes(')');
 					opCount = 1;
@@ -134,10 +157,10 @@ public class ExpressionParser
 					for(int i = args.size()-1; i >= argStart; i--)
 					{
 						node = args.get(i);
-						if (!(node instanceof Reference))
+						if (!(node instanceof Identifier))
 							throwException("Invalid Argument.", null);
 						
-						Reference ref = (Reference) node;
+						Identifier ref = (Identifier) node;
 						
 						names[i - argStart] = ref.getName();
 						args.remove(i);
@@ -179,7 +202,7 @@ public class ExpressionParser
 			}
 			else if (c == '{')
 			{	// Lambda
-				LambdaArgument lam = new LambdaArgument(exp, pos, resolver);
+				LambdaOperation lam = new LambdaOperation(exp, pos, resolver);
 				args.add(lam);
 				
 				Resolver oldResolver = this.resolver;
@@ -198,7 +221,7 @@ public class ExpressionParser
 			else if (c == ',' || c == ')' || c == '}' || c == ']')
 			{
 				INode last = args.isEmpty() ? null : args.get(args.size()-1);
-				if (last instanceof Reference) return null;
+				if (last instanceof FunctionCall) return null;
 				
 				if (opCount > 0) throwException("Missing operand.", null);
 				break;
@@ -277,7 +300,7 @@ public class ExpressionParser
 		while(args.size() > offset+1)
 		{
 			int index = -1;
-			Object e;
+			INode e;
 			int maxPrio = -1;
 			for(int i = offset; i < args.size(); i++)
 			{
@@ -486,7 +509,7 @@ public class ExpressionParser
 			args.add(new NullArgument(exp, start));
 		else
 			// Kein Schlüsselwort
-			args.add(new Reference(exp, start, name, resolver));
+			args.add(new Identifier(exp, start, name, resolver));
 	}
 	
 	private boolean isIdentifier(char c)

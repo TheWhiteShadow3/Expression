@@ -25,52 +25,64 @@ class InternalResolver implements Resolver
 	@Override
 	public Object resolve(String name, Argument[] args) throws EvaluationException
 	{
-		if (args != null && config.usePredefinedFunctions)
+		if (args != null)
 		{
-			if ("min".equals(name)) return min(args);
-			if ("max".equals(name)) return max(args);
-			if ("asc".equals(name)) return sort(args, true);
-			if ("desc".equals(name)) return sort(args, false);
+			if (config.usePredefinedFunctions)
+			{
+				if ("min".equals(name)) return min(args);
+				if ("max".equals(name)) return max(args);
+				if ("asc".equals(name)) return sort(args, true);
+				if ("desc".equals(name)) return sort(args, false);
+						
+				if (args.length == 0)
+				{
+					if ("rand".equals(name)) return Math.random();
+				}
+				else if (args.length == 1)
+				{
+					double d = args[0].asDouble();
 					
-			if (args.length == 0)
-			{
-				if ("rand".equals(name)) return Math.random();
+					if ("sin".equals(name)) return Math.sin(d);
+					if ("cos".equals(name)) return Math.cos(d);
+					if ("tan".equals(name)) return Math.tan(d);
+					if ("asin".equals(name)) return Math.asin(d);
+					if ("acos".equals(name)) return Math.acos(d);
+					if ("atan".equals(name)) return Math.atan(d);
+					if ("sinh".equals(name)) return Math.sinh(d);
+					if ("cosh".equals(name)) return Math.cosh(d);
+					if ("tanh".equals(name)) return Math.tanh(d);
+					if ("abs".equals(name)) return Math.abs(d);
+					if ("sign".equals(name)) return Math.signum(d);
+					if ("exp".equals(name)) return Math.exp(d);
+					if ("log".equals(name)) return Math.log(d);
+					if ("log10".equals(name)) return Math.log10(d);
+					if ("floor".equals(name)) return Math.floor(d);
+					if ("round".equals(name)) return Math.round(d);
+					if ("ceil".equals(name)) return Math.ceil(d);
+					if ("rad".equals(name)) return Math.toRadians(d);
+					if ("deg".equals(name)) return Math.toDegrees(d);
+				}
+				else if (args.length == 2)
+				{
+					double d1 = args[0].asDouble();
+					double d2 = args[1].asDouble();
+					
+					if ("pow".equals(name)) return Math.pow(d1, d2);
+					if ("atan2".equals(name)) return Math.atan2(d1, d2);
+					if ("hypot".equals(name)) return Math.hypot(d1, d2);
+				}
 			}
-			else if (args.length == 1)
+			if (config.useVariables && variables != null)
 			{
-				double d = args[0].asDouble();
-				
-				if ("sin".equals(name)) return Math.sin(d);
-				if ("cos".equals(name)) return Math.cos(d);
-				if ("tan".equals(name)) return Math.tan(d);
-				if ("asin".equals(name)) return Math.asin(d);
-				if ("acos".equals(name)) return Math.acos(d);
-				if ("atan".equals(name)) return Math.atan(d);
-				if ("sinh".equals(name)) return Math.sinh(d);
-				if ("cosh".equals(name)) return Math.cosh(d);
-				if ("tanh".equals(name)) return Math.tanh(d);
-				if ("abs".equals(name)) return Math.abs(d);
-				if ("sign".equals(name)) return Math.signum(d);
-				if ("exp".equals(name)) return Math.exp(d);
-				if ("log".equals(name)) return Math.log(d);
-				if ("log10".equals(name)) return Math.log10(d);
-				if ("floor".equals(name)) return Math.floor(d);
-				if ("round".equals(name)) return Math.round(d);
-				if ("ceil".equals(name)) return Math.ceil(d);
-				if ("rad".equals(name)) return Math.toRadians(d);
-				if ("deg".equals(name)) return Math.toDegrees(d);
-			}
-			else if (args.length == 2)
-			{
-				double d1 = args[0].asDouble();
-				double d2 = args[1].asDouble();
-				
-				if ("pow".equals(name)) return Math.pow(d1, d2);
-				if ("atan2".equals(name)) return Math.atan2(d1, d2);
-				if ("hypot".equals(name)) return Math.hypot(d1, d2);
+				Object obj = variables.get(name);
+				if (obj instanceof DynamicOperation)
+				{
+					DynamicOperation func = (DynamicOperation) obj;
+					return func.call(args);
+				}
 			}
 		}
-		else if (args == null)
+		else
 		{
 			if (config.usePredefinedContants)
 			{
@@ -102,7 +114,7 @@ class InternalResolver implements Resolver
 			}
 			else if (args[0] instanceof ObjectArgument)
 			{
-				ObjectArgument arg = (ObjectArgument) args[0];
+				ObjectArgument arg =  (ObjectArgument) args[0];
 				List list = arg.asList();
 				List<Argument> arguments = new ArrayList<Argument>(list.size());
 				for(int i = 0; i < list.size(); i++)

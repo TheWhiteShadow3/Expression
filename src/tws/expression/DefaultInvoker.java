@@ -13,6 +13,10 @@ import java.util.List;
  * <p>
  * Wenn in dem reciever der Methode {@link #invoke} ein Class-Objekt gekapselt ist, wird dieser als statisches Feld oder Methode behandelt.
  * </p>
+ * <P>
+ * Ist der reciever ein primitiver Typ, wird stattdessen der entsprechende Wrapper benutzt.<br>
+ * Dadurch lassen sich Methoden auf Zahlen aufrufen: <code>"5.intValue()"</code>
+ * </p>
  * @author TheWhiteShadow
  * @see Config#invoker
  */
@@ -25,8 +29,8 @@ public class DefaultInvoker implements Invoker
 		if (clazz.isPrimitive())
 			clazz = reciever.asObject().getClass();
 		
-		Object obj = (reciever instanceof Invokable) ? reciever : reciever.asObject();
-		boolean debug = reciever instanceof INode && reciever.getExpression().getConfig().debug;
+		Object obj = reciever.asObject();
+		boolean debug = reciever instanceof Object && reciever.getExpression().getConfig().debug;
 		// Statischer Call
 		if (obj instanceof Class)
 		{
@@ -165,7 +169,7 @@ public class DefaultInvoker implements Invoker
 				return false;
 			}
 		}
-		else if (targetType.isInterface() && arg instanceof LambdaArgument)
+		else if (targetType.isInterface() && arg instanceof Reference)
 		{
 			return true;
 		}
@@ -190,7 +194,7 @@ public class DefaultInvoker implements Invoker
 		return false;
 	}
 	
-	private Object convertArgument(Class targetType, Argument arg)
+	private Object convertArgument(Class targetType, final Argument arg)
 	{
 		if (targetType == byte.class || targetType == Byte.class) return (Byte.valueOf((byte) arg.asLong()));
 		if (targetType == short.class || targetType == Short.class) return (Short.valueOf((short) arg.asLong()));
@@ -214,20 +218,25 @@ public class DefaultInvoker implements Invoker
 			return array;
 		}
 		
-		if (targetType.isInterface() && arg instanceof Invokable)
+		if (targetType.isInterface() && arg instanceof Reference)
 		{
-			final Invokable inkokable = (Invokable) arg;
+			final DynamicOperation dynOp = (DynamicOperation) ((Reference) arg).asObject();
 			Object proxy = Proxy.newProxyInstance(targetType.getClassLoader(), new Class[] {targetType}, new InvocationHandler()
 			{
 				@Override
-				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+				public Object invoke(Object proxy, Method method, Object[] objects) throws Throwable
 				{
-					return convertArgument(method.getReturnType(), inkokable.with(args).resolve());
+					Argument[] args = new Argument[objects.length];
+					for(int i = 0; i < objects.length; i++)
+					{
+						args[i] = Config.wrap(arg, objects[i], true);
+					}
+					
+					return convertArgument(method.getReturnType(), dynOp.call(args));
 				}
 			});
 			return proxy;
 		}
-		
 		return arg.asObject();
 	}
 }

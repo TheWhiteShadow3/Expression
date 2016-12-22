@@ -8,7 +8,8 @@ public interface Operation
 {
 	/**
 	 * Gibt das Ergebnis der Operation zurück.
-	 * Das Ergebnis kann von vorherigen Aufrufen abweichen, wenn Variablen über einen {@link Resolver} aufgelöst werden müssen.
+	 * Wenn es sich um eine {@link DynamicOperation} handelt, kann das Ergebnis von vorherigen Aufrufen abweichen,
+	 * wenn beispielsweise Variablen über einen {@link Resolver} aufgelöst werden müssen.
 	 * @return Das Ergebnis der Operation.
 	 * @throws EvaluationException wenn die Operation nicht aufgelöst werden kann.
 	 */

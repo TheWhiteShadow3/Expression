@@ -25,30 +25,30 @@ import tws.expression.Config;
 import tws.expression.DefaultInvoker;
 import tws.expression.EvaluationException;
 import tws.expression.Expression;
-import tws.expression.LambdaArgument;
 import tws.expression.Operation;
+import tws.expression.Reference;
 import tws.expression.Resolver;
 import tws.expression.WrapperOperation;
 
 public class EvaluationTest
 {
 	/** Wert den der Resolver bei 'blub' auflösen soll. */
-	private static Object blub = null;
+	static Object blub = null;
 	
 	/** Wert den der Resolver bei 'obj' auflösen soll. */
-	private static Object obj = new Object();
+	static final Object obj = new Object();
 	
 	/** Wert den der Resolver bei 'array' auflösen soll. */
-	static int[][] array = new int[][] {{1, 2, 3}, {4, 5, 6}};
+	static final int[][]  array = new int[][] {{1, 2, 3}, {4, 5, 6}};
 	
 	/** Wert den der Resolver bei 'list' auflösen soll. */
-	static List<String> list = new ArrayList<String>();
+	static final List<String> list = new ArrayList<String>();
 	
 	/** Wert den der Resolver bei 'carray' auflösen soll. */
-	static char[] carray = "Rose".toCharArray();
+	static final char[] carray = "Rose".toCharArray();
 	
 	static final boolean DEBUG = false;
-	
+
 	@BeforeClass
 	public static void setup()
 	{
@@ -342,7 +342,11 @@ public class EvaluationTest
 		arr[1] = 4;
 		Argument a = op.resolve();
 		arr[1] = 6;
-		assertEquals(4L, a.asList().get(1)); 
+		// Listen bleiben beim Auflösen weiter verbunden, da es sich nur um Referezen auf diese handelt.
+		assertEquals(6, a.asList().get(1)); 
+		List list = a.asList();
+		arr[1] = 8;
+		assertEquals(6, list.get(1)); 
 		
 		System.out.println();
 	}
@@ -785,19 +789,19 @@ public class EvaluationTest
 			fail(e.getMessage());
 		}
 		
-		result = new Expression("l := {(a) a*a}", config).resolve();
-		assertTrue(result instanceof LambdaArgument);
+		result = new Expression("l := {(a) a*a}", config).resolve(false);
+		assertTrue(result instanceof Reference);
 		
-		l = ((LambdaArgument) result).with(3).resolve().asLong();
-		assertEquals(9L, l);
+//		l = ((LambdaArgument) result).call(3).resolve().asLong();
+//		assertEquals(9L, l);
 		
-		l = new Expression("l.with(4)", config).resolve().asLong();
+		l = new Expression("l(4)", config).resolve().asLong();
 		assertEquals(16L, l);
 
 		l = new Expression("{1+1}", config).resolve().asLong();
 		assertEquals(2L, l);
 		
-		l = new Expression("{(a) var.size() + a}.with(5)", config).resolve().asLong();
+		l = new Expression("{(a) var.size() + a}(5)", config).resolve().asLong();
 		assertEquals(9L, l);
 	}
 

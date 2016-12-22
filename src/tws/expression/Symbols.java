@@ -318,12 +318,11 @@ class Symbols
 	private static Argument assign(INode left, INode right)
 	{
 		Argument arg = right.getArgument();
-		Object value = (arg instanceof Invokable) ? arg : arg.asObject();
-		
-		if (left instanceof Reference)
-		{
-			String var = ((Reference) left).getName();
+		Object value = Config.unwrap(arg);
 
+		if (left instanceof Identifier)
+		{
+			String var =  ((Identifier) left).getName();
 			left.getExpression().getConfig().assign(var, value);
 			return arg;
 		}
@@ -374,7 +373,7 @@ class Symbols
 			}
 			else if (op.getSymbol().getOperator() == Operator.DOT)
 			{
-				((Reference) nodes[1]).setArguments(new INode[] {right});
+//				((FunctionCall) nodes[1]).setArguments(new INode[] {right});
 				dot(nodes[0], nodes[1]);
 				return arg;
 			}
@@ -432,12 +431,17 @@ class Symbols
 	private static Argument dot(INode recieverNode, INode call)
 	{
 		Argument reciever = recieverNode.getArgument();
-		if (!(call instanceof Reference))
+		Object callObject = (call instanceof FunctionCall) ? ((FunctionCall) call).getTarget() : call;
+		if (!(callObject instanceof Identifier))
 			throw new EvaluationException(call, "Can not invoke " + call);
 		
-		Reference ref = (Reference) call;
-		String name = ref.getName();
-		Argument[] args = ref.resolveArguments();
+		Identifier id = (Identifier) callObject;
+		String name = id.getName();
+		Argument[] args = null;
+		if (call instanceof FunctionCall)
+		{
+			args = ((FunctionCall) call).resolveArguments();
+		}
 		try
 		{
 			Config config = recieverNode.getExpression().getConfig();

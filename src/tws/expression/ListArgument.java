@@ -18,6 +18,7 @@ public class ListArgument extends Node implements Argument
 	{
 		super(parent);
 		this.argNodes = (List) Arrays.asList(arguments);
+		this.resolved = true;
 	}
 	
 	ListArgument(Expression exp, int sourcePos, INode[] argNodes)
@@ -31,7 +32,7 @@ public class ListArgument extends Node implements Argument
 	{
 		return this;
 	}
-
+	
 	@Override
 	public Class<?> getType() { return List.class; }
 	@Override
@@ -99,7 +100,7 @@ public class ListArgument extends Node implements Argument
 		{
 			for(int i = 0; i < size(); i++)
 			{
-				argNodes.set(i, (INode) argNodes.get(i).getArgument());
+				argNodes.set(i, argNodes.get(i).getArgument());
 			}
 			resolved = true;
 		}

@@ -143,6 +143,7 @@ public final class Config
 	/** Interner Resolver für vordefinierte Variablen und Funktionen. */
 	final InternalResolver internalResolver;
 
+
 	/**
 	 * Erstellt eine neue Konfiguration für eine Expression mit Standardwerten.
 	 */
@@ -298,6 +299,15 @@ public final class Config
 		}
 		
 		return new ObjectArgument(parent, obj);
+	}
+	
+	static Object unwrap(INode obj)
+	{
+		if (obj instanceof INode)
+		{
+			return obj.getArgument().asObject();
+		}
+		return obj;
 	}
 	
 	static Argument[] asArgumentList(INode parent, Object obj)

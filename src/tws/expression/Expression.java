@@ -147,7 +147,7 @@ public class Expression
 	 */
 	public Argument resolve() throws EvaluationException
 	{
-		return compile().resolve();
+		return resolve(true);
 	}
 
 	/**
@@ -162,5 +162,24 @@ public class Expression
 	public Object evaluate() throws EvaluationException
 	{
 		return resolve().asObject();
+	}
+	
+	/**
+	 * Löst den Ausdruck auf.
+	 * Der Parameter bestimmt im Fall, in dem das Ergebnis eine Funktion ist,
+	 * ob diese ohne Argumente aufgerufen, und das Ergebnis zurückgegeben werden soll..
+	 * @param full Vollständige Auflösung.
+	 * @return Das Ergebnis des Ausdrucks.
+	 * @throws EvaluationException Wenn der Ausdruck ungültig ist oder nicht aufgelöst werden kann.
+	 * @see #compile()
+	 * @see #evaluate()
+	 */
+	public Argument resolve(boolean full) throws EvaluationException
+	{
+		Argument arg = compile().resolve();
+		if (full && arg instanceof Reference)
+			return ((Reference) arg).getOperation().call(null);
+		else
+			return arg;
 	}
 }
