@@ -2,7 +2,9 @@ package tws.expression;
 
 import java.lang.reflect.Array;
 import java.text.Collator;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -235,6 +237,7 @@ public final class Config
 	 * @param value Wert, den die Variable erhalten soll.
 	 * @throws EvaluationException Wenn das Argument nicht zugewiesen werden konnte.
 	 * @see #resolver
+	 * @see #resolve(String)
 	 */
 	public void assign(String name, Object value) throws EvaluationException
 	{
@@ -255,12 +258,32 @@ public final class Config
 	}
 	
 	/**
+	 * Löst den angegebenen Namen auf und gibt das Ergebnis zurück.
+	 * <p>
+	 * Die Methode löst den Namen entsprechend der gesetzten Konfiguration dieses Config-Objekts auf.
+	 * Sofern ein externer Resolver gesetzt wurde, wird der Aufruf an diesen weitergeleitet,
+	 * wenn der Name nicht bereits intern aufgelöst werden konnte.
+	 * </p>
+	 * <p>
+	 * Beim Auflösen kann ein <code>EvaluationException</code> geworfen werden,
+	 * wie durch die Methode {@link Resolver#resolve(String, Argument[])} definiert.
+	 * </p>
+	 * @param name Der Aufzulösende Name.
+	 * @return Der aufgelöste Wert.
+	 * @see #assign(String, Object)
+	 */
+	public Object resolve(String name) throws EvaluationException
+	{
+		return internalResolver.resolve(name, null);
+	}
+	
+	/**
 	 * Gibt eine Ansicht auf alle gesetzten Variablen zurück.
 	 * @return Map, der gesetzten Variablen.
 	 */
-	public Object getVariable(String name)
+	public Map<String, Object> getVariables()
 	{
-		return internalResolver.resolve(name, null);
+		return Collections.unmodifiableMap(internalResolver.getVariables());
 	}
 
 	/**
