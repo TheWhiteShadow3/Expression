@@ -6,11 +6,10 @@ package tws.expression;
  * Es können mathematische-, logische-, String- und Array-Operationen, Vergleiche, Variablen und Funktionen benutzt werden.
  * Ausdrücke können kompiliert werden um mit verschiedenen Parametern zu einem späteren Zeitpunkt aufgelöst zu werden.
  * Das Verhalten bei unterschiedlichen Typen, kann konfiguriert werden um z.B. Zahlen statt boolsche Werte zu verwenden.
- * <p>Beispiel:
+ * <p>Beispiel:</p>
  * <pre>
  * new Expression("1 + 2").evaluate() == 3
  * new Expression("1 &lt; 2").evaluate() == true</pre>
- * </p>
  * <b>Operatoren</b>, die benutzt werden können sortiert nach der Priorität:
  * <pre>
  * .  Funktion oder Eigenschaft eines Objekts (Funktioniert nur mit einem {@link Invoker})
@@ -33,12 +32,11 @@ package tws.expression;
  * |  Oder
  * ^  Exklusiv-Oder
  * := Zuweisung</pre>
- * </p>
  * <p>
  * <b>Variablen und Funktionen</b> werden durch einen {@link Resolver} ersetzt, der in der Konfiguration gesetzt werden kann.
  * Die drei vorbelegten Schlüsselwörter true, false und null können nicht als Namen
  * für Variablen oder Funktionen benutzt werden.
- * <br>Beispiel:<br>
+ * <br>Beispiel:</p>
  * <pre>
  * Expression.DEFAULT_CONFIG.resolver = new Resolver() {
 	public Object resolve(String refName, Argument[] args) throws EvaluationException {
@@ -46,28 +44,25 @@ package tws.expression;
 	}
  * };
  * new Expression("var * 2").evaluate() == 10</pre>
- * </p>
+ * 
  * <p>
  * Variablen können für einen späteren Zugriff gespeichert werden.
  * Dazu kann der interne Kontainer mit {@link Config#useVariables} an geschaltet werden oder
- * ein externer Resolver benutzt werden.
+ * ein externer Resolver benutzt werden.</p>
  * <pre>
  * new Expression("var := 5").evaluate() == 5;
  * new Expression("var").evaluate() == 5</pre>
  * Die Gültigkeit der Variablen hängt direkt mit dem Config-Objekt zusammen.
  * Nur Expressions mit gleichem Config-Objekt sehen die gleichen Variablen.
- * </p>
  * <p>
  * Im Zusammenhang mit Variablenzugriffen kann auf Elemente von <b>Arrays und Listen</b> zugegriffen werden.
  * Die Syntax für Mehrdimensionale Arrays entspricht dabei der Form in Java.
- * </p>
- * <i>Sei array1D ein 1-Dimensionales Array oder eine Liste vom Typ {@link java.util.List}:</i>
+ * <i>Sei array1D ein 1-Dimensionales Array oder eine Liste vom Typ {@link java.util.List}:</i></p>
  * <pre>new Expression("array1D[1]").evaluate();</pre>
- * <i>Sei array2D ein 2-Dimensionales Array oder eine verschachtelte Liste vom Typ {@link java.util.List}:</i>
+ * <p><i>Sei array2D ein 2-Dimensionales Array oder eine verschachtelte Liste vom Typ {@link java.util.List}:</i></p>
  * <pre>new Expression("array2D[1][2]").evaluate();</pre>
- * <p>Das Definieren und Zuweisen einzelner Array-Elemente ist ebenfalls möglich.
+ * <p>Das Definieren und Zuweisen einzelner Array-Elemente ist ebenfalls möglich.</p>
  * <pre>new Expression("array[2] := [1, 2, [3, 4]]").evaluate();</pre>
- * </p>
  * @author TheWhiteShadow
  * @see Config
  */

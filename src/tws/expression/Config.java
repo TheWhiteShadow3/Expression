@@ -124,6 +124,14 @@ public final class Config
 	public boolean useVariables = false;
 	
 	/**
+	 * Gibt an, ob das Schlüsselwort 'class' als Class-Objekt interpretiert werden soll.
+	 * <p>Ermöglicht mit einem entsprechenden Resolver auf statische Methoden der Class-Klasse zuzugreifen.</p>
+	 * <p><b>Achtung!</b> <i>Das Aktivieren dieses Schalters stellt ein potenzielles Sicherheitsrisiko da.</i></p>
+	 * @since 1.3
+	 */
+	public boolean allowClassIdentifier = false;
+	
+	/**
 	 * Der Resolver, der für das Auflösen von Variablen und Funktionen benutzt werden soll,
 	 * so wie optional auch für das Setzten von Variablen.
 	 * Default ist <code>null</code>.

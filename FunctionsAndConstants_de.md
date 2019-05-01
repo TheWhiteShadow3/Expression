@@ -55,7 +55,7 @@ config.usePredefinedContants = false;
 config.usePredefinedFunctions = false;
 ```
 
-Dadurch werden keine vordefinierten Konstanten oder Funktionen mehr intenr aufgelöst und alle Aufrufe an den eigenen Resolver weitergeletet.
+Dadurch werden keine vordefinierten Konstanten oder Funktionen mehr intern aufgelöst und alle Aufrufe an den eigenen Resolver weitergeletet.
 
 ##Variablen selbst verwalten
 

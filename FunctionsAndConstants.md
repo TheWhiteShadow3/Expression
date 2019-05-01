@@ -55,7 +55,7 @@ config.usePredefinedContants = false;
 config.usePredefinedFunctions = false;
 ```
 
-This does not resolve any predefined constants or functions intenr, and redirect all calls to your own resolver.
+This does not resolve any predefined constants or functions internaly, and redirect all calls to your own resolver.
 
 ## Manage variables yourself
 

@@ -550,7 +550,7 @@ public class EvaluationTest
 		list = new Expression("[1, 2+4, 3]", config).resolve().asList();
 		assertEquals(6L, list.get(1));
 
-		// Seit 0.4 gehen auf Maps.
+		// Seit 0.4 gehen auch Maps.
 		Map map = new HashMap<String, Object>();
 		map.put("k", "v");
 		config.useVariables = true;
@@ -618,21 +618,21 @@ public class EvaluationTest
 		
 		b = new Expression("abc := true", config).resolve().asBoolean();
 		assertTrue(b);
-		assertTrue((Boolean) config.getVariable("abc"));
+		assertTrue((Boolean) config.resolve("abc"));
 		
 		b = new Expression("abc", config).resolve().asBoolean();
 		assertTrue(b);
 		
 		b = new Expression("xyz := abc", config).resolve().asBoolean();
 		assertTrue(b);
-		assertTrue((Boolean) config.getVariable("xyz"));
+		assertTrue((Boolean) config.resolve("xyz"));
 		
 		result = new Expression("abc := [[1 ,2, 3]]", config).resolve().asObject();
 		assertEquals(2L, ((List<List<?>>) result).get(0).get(1));
 		
 		b = new Expression("abc[0][1] := xyz", config).resolve().asBoolean();
 		assertTrue(b);
-		assertTrue( (Boolean) ((List<List<?>>) config.getVariable("abc")).get(0).get(1) );
+		assertTrue( (Boolean) ((List<List<?>>) config.resolve("abc")).get(0).get(1) );
 		
 		b = new Expression("abc[0][1]", config).resolve().asBoolean();
 		assertTrue(b);
@@ -722,7 +722,40 @@ public class EvaluationTest
 		
 		// Auch statische Felder müssen von einem Objekt aus aufgerufen werden!
 		result = new Expression("pantsu.SHIRO_PANTSU := pantsu", config).resolve().asObject();
-		assertEquals(config.getVariable("pantsu"), result);
+		assertEquals(config.resolve("pantsu"), result);
+		
+
+	}
+	
+	@Test
+	public void testInjection()
+	{
+		System.out.println("Injection");
+		Config config = new Config();
+		config.debug = DEBUG;
+		config.useVariables = true;
+		config.invoker = new DefaultInvoker();
+		Object result;
+		
+		try
+		{
+			result = new Expression("''.getClass().forName('java.lang.Runtime')", config).resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		try
+		{
+			result = new Expression("class.forName('java.lang.Runtime').getRuntime()", config).resolve();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		// Möglich Seit 1.3
+		config.allowClassIdentifier = true;
+		
+		result = new Expression("class.forName('java.lang.Runtime').getRuntime()", config).evaluate();
+		assert(Runtime.getRuntime() == result);
 	}
 	
 	@Test
@@ -771,16 +804,19 @@ public class EvaluationTest
 		long l;
 		
 		new Expression("var := [4, 3, 7, 2]", config).resolve();
-
+		new ArrayList<String>().forEach((a)->{ a.length(); });
 		try
 		{
 			config.assign("Collections", Collections.class);
-			new Expression("Collections.sort(var, {(a, b) b - a})", config).resolve();
+			new Expression("Collections.sort(var, {(a, b) a - b})", config).resolve();
 			
 			// Code für Java 8 ohne statischem Aufruf.
-			// new Expression("var.sort({(a, b) b - a})", config).resolve();
+			new Expression("var.sort({(a, b) b - a})", config).resolve();
 			
-			List<Long> list = (List<Long>) config.getVariable("var");
+			// BUG: Funktioniert nicht wegen Bug JDK-8133168
+//			new Expression("var.stream().sorted().toArray()", config).resolve();
+			
+			List<Long> list = (List<Long>) config.resolve("var");
 			assertEquals(7L, (long) list.get(0));
 		}
 		catch(EvaluationException e)
@@ -791,8 +827,9 @@ public class EvaluationTest
 		
 		result = new Expression("l := {(a) a*a}", config).resolve(false);
 		assertTrue(result instanceof Reference);
+		// result Lässt sich allerdings nicht mehr weiterverwenden.
 		
-//		l = ((LambdaArgument) result).call(3).resolve().asLong();
+//		((LambdaOperation) ((Reference) result).getOperation()).call(3).resolve().asLong();
 //		assertEquals(9L, l);
 		
 		l = new Expression("l(4)", config).resolve().asLong();

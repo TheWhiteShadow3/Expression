@@ -507,6 +507,8 @@ public class ExpressionParser
 			args.add(new BooleanArgument(exp, start, false));
 		else if ("null".equals(name))
 			args.add(new NullArgument(exp, start));
+		else if ("class".equals(name) && exp.getConfig().allowClassIdentifier)
+			args.add(new ObjectArgument(exp, start, getClass().getClass()));
 		else
 			// Kein Schlüsselwort
 			args.add(new Identifier(exp, start, name, resolver));
