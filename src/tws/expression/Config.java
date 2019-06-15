@@ -82,6 +82,26 @@ public final class Config
 		 */
 		public static final int TO_EMPTY_LIST	= 4;
 	}
+
+	/**
+	 * Wenn aktiviert, werden bestimmte präfix und infix Operationen in Methoden Aufrufe konvertiert.
+	 * Voraussetzung ist, das ein Invoker gesetzt ist, der die Methoden interpretiert.
+	 * <p>
+	 * <b>Hierfür wird die folgende Konvertierung durchgeführt:</b>
+	 * <ul>
+	 * <li><code> + add
+	 * <li><code> - sub (neg falls präfix)
+	 * <li><code> * mul
+	 * <li><code> / div
+	 * <li><code> % mod
+	 * <li><code> = equals
+	 * <li><code>!= equals (aber mit negierter Auswertung)
+	 * </ul>
+	 * </p>
+	 * <b>Beispiel:</b>
+	 * Aus <code>( v1 + v2 )</code> wird implizit <code>( v1.add(v2) )</code>
+	 */
+	public boolean useOperationOverloading = false;
 	
 	/**
 	 * Schaltet die Debug-Ausgaben ein.

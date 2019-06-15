@@ -77,6 +77,11 @@ class Symbols
 			return new IntegerArgument(node, li + ri);
 		}
 		
+		if (left.isObject() && node.getExpression().getConfig().useOperationOverloading)
+		{
+			return invoke(node, "add", left, right);
+		}
+		
 		throw new EvaluationException(node, "Invalid Type for Operation: ADD");
 	}
 
@@ -94,6 +99,11 @@ class Symbols
 			long li = left.asLong();
 			long ri = right.asLong();
 			return new IntegerArgument(node, li - ri);
+		}
+		
+		if (left.isObject() && node.getExpression().getConfig().useOperationOverloading)
+		{
+			return invoke(node, "sub", left, right);
 		}
 		
 		throw new EvaluationException(node, "Invalid Type for Operation: SUB");
@@ -117,6 +127,11 @@ class Symbols
 			return new IntegerArgument(node, li * ri);
 		}
 		
+		if (left.isObject() && node.getExpression().getConfig().useOperationOverloading)
+		{
+			return invoke(node, "mul", left, right);
+		}
+		
 		throw new EvaluationException(node, "Invalid Type for Operation: MUL");
 	}
 	
@@ -138,6 +153,11 @@ class Symbols
 			return new IntegerArgument(node, li / ri);
 		}
 		
+		if (left.isObject() && node.getExpression().getConfig().useOperationOverloading)
+		{
+			return invoke(node, "div", left, right);
+		}
+		
 		throw new EvaluationException(node, "Invalid Type for Operation: DIV");
 	}
 
@@ -155,6 +175,11 @@ class Symbols
 			long li = left.asLong();
 			long ri = right.asLong();
 			return new IntegerArgument(node, li % ri);
+		}
+		
+		if (left.isObject() && node.getExpression().getConfig().useOperationOverloading)
+		{
+			return invoke(node, "mod", left, right);
 		}
 		
 		throw new EvaluationException(node, "Invalid Type for Operation: DIV");
@@ -240,6 +265,11 @@ class Symbols
 			return (right.isString() || right.isObject()) && left.asObject().equals(right.asObject());
 		}
 		
+		if (left.isObject() && node.getExpression().getConfig().useOperationOverloading)
+		{
+			return invoke(node, "equal", left, right).asBoolean();
+		}
+		
 		return compareNumeric(node, left, right) == 0;
 	}
 	
@@ -305,6 +335,11 @@ class Symbols
 		if (arg.isNumber())
 		{
 			return new IntegerArgument(node, -arg.asLong());
+		}
+
+		if (arg.isObject() && node.getExpression().getConfig().useOperationOverloading)
+		{
+			return invoke(node, "neg", arg, null);
 		}
 		
 		throw new EvaluationException("Invalid Type for Operation: NEG");
@@ -477,6 +512,35 @@ class Symbols
 		catch (Exception e)
 		{
 			throw new EvaluationException(call, "Can not invoke " + name + " on " + reciever, e);
+		}
+	}
+	
+	private static Argument invoke(INode node, String method, Argument reciever, Argument arg)
+	{
+		try
+		{
+			Argument[] args = (arg != null) ? new Argument[] {arg} : new Argument[0];
+			Config config = node.getExpression().getConfig();
+			Object result = config.invoke(reciever, method, args);
+			if (result instanceof Operation)
+				return ((Operation) result).resolve();
+			else
+				return Config.wrap(node, result, false);
+		}
+		catch (NoSuchMethodException e)
+		{
+			StringBuilder builder = new StringBuilder();
+			builder.append("Method ").append(method);
+			builder.append('(');
+			if (arg != null) builder.append(arg.getType());
+			builder.append(')');
+			builder.append(" not found for ").append(reciever.getType().getName());
+			
+			throw new EvaluationException(node, builder.toString(), e);
+		}
+		catch (Exception e)
+		{
+			throw new EvaluationException(node, "Can not invoke " + method + " on " + reciever, e);
 		}
 	}
 }

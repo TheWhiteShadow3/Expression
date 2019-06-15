@@ -122,27 +122,6 @@ public class ExpressionParser
 						}
 						ref.setArguments(argNodes);
 					}
-					
-//					if (node instanceof LambdaArgument)
-//					{	// Lambda-Funktion
-//						LambdaArgument lam = (LambdaArgument) node;
-//						node = new Reference(node, null, lam.getResolver());
-//						args.set(args.size()-1, node);
-//					}
-//					if (node instanceof Reference)
-//					{	// Funktion
-//						Reference ref = (Reference) node;
-//						int argStart = args.size();
-//						addListNodes(')');
-//						
-//						INode[] argNodes = new INode[args.size()- argStart];
-//						for(int i = args.size()-1; i >= argStart; i--)
-//						{
-//							argNodes[i - argStart] = args.get(i);
-//							args.remove(i);
-//						}
-//						ref.setArguments(argNodes);
-//					}
 					else
 						throw new EvaluationException(node, "Invalid identifier.");
 				}

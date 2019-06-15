@@ -841,8 +841,44 @@ public class EvaluationTest
 		l = new Expression("{(a) var.size() + a}(5)", config).resolve().asLong();
 		assertEquals(9L, l);
 	}
-
 	
+	@Test
+	public void testOperatorOverloading()
+	{
+		System.out.println("Overloading");
+		final Config config = new Config();
+		config.debug = DEBUG;
+		config.invoker = new DefaultInvoker();
+		config.useVariables = true;
+		
+		config.assign("n1", new Number(5));
+		config.assign("n2", new Number(3));
+		Number result;
+		try
+		{
+			result = (Number) new Expression("n1 + n2", config).evaluate();
+			fail("Fail: " + result);
+		}
+		catch(EvaluationException e) { handleException(e); }
+		
+		config.useOperationOverloading = true;
+		
+		result = (Number) new Expression("n1 + n2", config).evaluate();
+		assertEquals(8, result.x);
+		
+		boolean b = new Expression("n1 = n2", config).resolve().asBoolean();
+		assertFalse(b);
+		
+		result = (Number) new Expression("-n1", config).evaluate();
+		assertEquals(-5, result.x);
+		
+		new Expression("var := [2, 4]", config).resolve();
+		new Expression("var + 6", config).resolve();
+		// List#add gibt ein boolean zurück, wir wollen aber die Liste haben.
+		List<?> list = (List<?>) config.getVariables().get("var");
+		assertEquals(6L, list.get(2));
+	}
+
 	// Klasse für die Invoke-Testreihe
 	public static class Pantsu
 	{
@@ -857,6 +893,32 @@ public class EvaluationTest
 		public String[] colors()
 		{
 			return colors;
+		}
+	}
+	
+	// Klasse für die Operation Overloading Testreihe
+	public static class Number
+	{
+		public final int x;
+		
+		private Number(int x)
+		{
+			this.x = x;
+		}
+
+		public Number add(Number n)
+		{
+			return new Number(this.x + n.x);
+		}
+		
+		public Number neg()
+		{
+			return new Number(-this.x);
+		}
+		
+		public boolean equals(Number n)
+		{
+			return this.x == n.x;
 		}
 	}
 	
